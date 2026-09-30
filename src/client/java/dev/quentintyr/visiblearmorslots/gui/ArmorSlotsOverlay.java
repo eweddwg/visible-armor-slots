@@ -8,17 +8,16 @@ import dev.quentintyr.visiblearmorslots.mixin.client.HandledScreenAccessor;
 import dev.quentintyr.visiblearmorslots.network.SlotActionPayload;
 import dev.quentintyr.visiblearmorslots.util.KeyCodes;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.client.gui.screen.ingame.InventoryScreen;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,13 +26,13 @@ import java.util.List;
  * Enhanced armor slots overlay system
  */
 public class ArmorSlotsOverlay {
-    private static final Identifier COLUMN_TEXTURE_FULL = Identifier.of(
+    private static final Identifier COLUMN_TEXTURE_FULL = Identifier.parse(
             "visiblearmorslots:textures/gui/extra-slots.png");
-    private static final Identifier COLUMN_TEXTURE_COMPACT = Identifier.of(
+    private static final Identifier COLUMN_TEXTURE_COMPACT = Identifier.parse(
             "visiblearmorslots:textures/gui/extra-slots-no-second-hand.png");
-    private static final Identifier COLUMN_TEXTURE_FULL_DARK = Identifier.of(
+    private static final Identifier COLUMN_TEXTURE_FULL_DARK = Identifier.parse(
             "visiblearmorslots:textures/gui/dark-extra-slots.png");
-    private static final Identifier COLUMN_TEXTURE_COMPACT_DARK = Identifier.of(
+    private static final Identifier COLUMN_TEXTURE_COMPACT_DARK = Identifier.parse(
             "visiblearmorslots:textures/gui/dark-extra-slots-no-second-hand.png");
 
     private final List<ArmorSlotWidget> armorSlots = new ArrayList<>();
@@ -55,13 +54,13 @@ public class ArmorSlotsOverlay {
 
     private boolean visible = false;
 
-    public void initialize(HandledScreen<?> screen) {
+    public void initialize(AbstractContainerScreen<?> screen) {
         if (screen == null) {
             dev.quentintyr.visiblearmorslots.Visiblearmorslots.LOGGER.warn("Attempted to initialize overlay with null screen");
             visible = false;
             return;
         }
-        
+
         if (!ModConfig.getInstance().isEnabled()) {
             visible = false;
             return;
@@ -76,9 +75,9 @@ public class ArmorSlotsOverlay {
         // Respect allowed container whitelist (use screen handler type registry id if
         // available)
         try {
-            net.minecraft.screen.ScreenHandlerType<?> type = screen.getScreenHandler().getType();
-            Identifier handlerId = net.minecraft.registry.Registries.SCREEN_HANDLER.getId(type);
-            dev.quentintyr.visiblearmorslots.Visiblearmorslots.LOGGER.info("Container opened: {} - Allowed: {}", 
+            net.minecraft.world.inventory.MenuType<?> type = screen.getMenu().getType();
+            Identifier handlerId = net.minecraft.core.registries.BuiltInRegistries.MENU.getKey(type);
+            dev.quentintyr.visiblearmorslots.Visiblearmorslots.LOGGER.info("Container opened: {} - Allowed: {}",
                 handlerId, ModConfig.getInstance().isContainerAllowed(handlerId));
             if (handlerId != null && !ModConfig.getInstance().isContainerAllowed(handlerId)) {
                 visible = false;
@@ -93,25 +92,25 @@ public class ArmorSlotsOverlay {
         createSlots();
     }
 
-    private void calculatePosition(HandledScreen<?> screen) {
+    private void calculatePosition(AbstractContainerScreen<?> screen) {
         HandledScreenAccessor accessor = (HandledScreenAccessor) screen;
-        int screenLeft = accessor.getX();
-        int screenTop = accessor.getY();
-        int screenHeight = accessor.getBackgroundHeight();
+        int screenLeft = accessor.getLeftPos();
+        int screenTop = accessor.getTopPos();
+        int screenHeight = accessor.getImageHeight();
 
         ModConfig config = ModConfig.getInstance();
 
         // Start from the chosen side, then apply margins and any auto offset
         if (config.getPositioning() == ModConfig.Side.RIGHT) {
-            baseX = screenLeft + accessor.getBackgroundWidth() + config.getMarginX();
+            baseX = screenLeft + accessor.getImageWidth() + config.getMarginX();
         } else {
             baseX = screenLeft - 28 - config.getMarginX();
 
             // Optional extra shift to avoid potion effects overlay (left side only)
             if (config.isAutoPositioning()) {
-                MinecraftClient mc = MinecraftClient.getInstance();
-                PlayerEntity player = mc.player;
-                if (player != null && player.hasStatusEffect(StatusEffects.REGENERATION)) {
+                Minecraft mc = Minecraft.getInstance();
+                Player player = mc.player;
+                if (player != null && player.hasEffect(MobEffects.REGENERATION)) {
                     baseX -= 24; // shift further left
                 }
             }
@@ -144,17 +143,14 @@ public class ArmorSlotsOverlay {
         }
     }
 
-    public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         if (!visible)
             return;
 
-        MinecraftClient mc = MinecraftClient.getInstance();
-        PlayerEntity player = mc.player;
+        Minecraft mc = Minecraft.getInstance();
+        Player player = mc.player;
         if (player == null)
             return;
-
-        // Get fresh inventory reference each frame to ensure real-time updates
-        PlayerInventory inventory = player.getInventory();
 
         // Draw column background (choose texture based on offhand visibility and dark mode)
         boolean offhandShown = offhandSlot != null;
@@ -166,58 +162,56 @@ public class ArmorSlotsOverlay {
             tex = offhandShown ? COLUMN_TEXTURE_FULL : COLUMN_TEXTURE_COMPACT;
         }
         int texHeight = offhandShown ? 100 : 78;
-        drawContext.drawTexture(tex, baseX, baseY, 0, 0, 24, texHeight, 24, texHeight);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, tex, baseX, baseY, 0, 0, 24, texHeight, 24, texHeight);
 
         // Render armor slots with fresh data
         for (int i = 0; i < armorSlots.size(); i++) {
             ArmorSlotWidget slot = armorSlots.get(i);
-            ItemStack stack = inventory.getArmorStack(3 - i); // Reverse order: helmet=3, boots=0
-            slot.render(drawContext, stack, mouseX, mouseY);
+            ItemStack stack = player.getItemBySlot(slot.getSlotType().getEquipmentSlot());
+            slot.render(graphics, stack, mouseX, mouseY);
 
             // Highlight slot if mouse is over it
             if (slot.isMouseOver(mouseX, mouseY)) {
-                drawContext.fill(slot.getX(), slot.getY(), slot.getX() + 16, slot.getY() + 16,
+                graphics.fill(slot.getX(), slot.getY(), slot.getX() + 16, slot.getY() + 16,
                         0x80FFFFFF); // Semi-transparent white overlay
             }
         }
 
         // Render offhand slot with fresh data if enabled
         if (offhandSlot != null) {
-            ItemStack offhandStack = player.getOffHandStack();
-            offhandSlot.render(drawContext, offhandStack, mouseX, mouseY);
+            ItemStack offhandStack = player.getOffhandItem();
+            offhandSlot.render(graphics, offhandStack, mouseX, mouseY);
 
             if (offhandSlot.isMouseOver(mouseX, mouseY)) {
-                drawContext.fill(offhandSlot.getX(), offhandSlot.getY(),
+                graphics.fill(offhandSlot.getX(), offhandSlot.getY(),
                         offhandSlot.getX() + 16, offhandSlot.getY() + 16,
                         0x80FFFFFF);
             }
         }
     }
 
-    public void renderTooltips(DrawContext drawContext, int mouseX, int mouseY) {
+    public void renderTooltips(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         if (!visible || !ModConfig.getInstance().shouldShowTooltips())
             return;
 
-        MinecraftClient mc = MinecraftClient.getInstance();
-        PlayerEntity player = mc.player;
+        Minecraft mc = Minecraft.getInstance();
+        Player player = mc.player;
         if (player == null)
             return;
-
-        PlayerInventory inventory = player.getInventory();
 
         try {
             // Check armor slots for tooltips
             for (int i = 0; i < armorSlots.size(); i++) {
                 ArmorSlotWidget slot = armorSlots.get(i);
                 if (slot.isMouseOver(mouseX, mouseY)) {
-                    ItemStack stack = inventory.getArmorStack(3 - i);
+                    ItemStack stack = player.getItemBySlot(slot.getSlotType().getEquipmentSlot());
                     if (!stack.isEmpty()) {
-                        drawContext.drawItemTooltip(mc.textRenderer, stack, mouseX, mouseY);
+                        graphics.setTooltipForNextFrame(mc.font, stack, mouseX, mouseY);
                     } else {
                         // Show empty slot tooltip
-                        Text tooltip = Text.translatable("gui.visiblearmorslots.empty." +
+                        Component tooltip = Component.translatable("gui.visiblearmorslots.empty." +
                                 slot.getSlotType().name().toLowerCase());
-                        drawContext.drawTooltip(mc.textRenderer, tooltip, mouseX, mouseY);
+                        graphics.setTooltipForNextFrame(mc.font, tooltip, mouseX, mouseY);
                     }
                     return;
                 }
@@ -225,12 +219,12 @@ public class ArmorSlotsOverlay {
 
             // Check offhand slot
             if (offhandSlot != null && offhandSlot.isMouseOver(mouseX, mouseY)) {
-                ItemStack offhandStack = player.getOffHandStack();
+                ItemStack offhandStack = player.getOffhandItem();
                 if (!offhandStack.isEmpty()) {
-                    drawContext.drawItemTooltip(mc.textRenderer, offhandStack, mouseX, mouseY);
+                    graphics.setTooltipForNextFrame(mc.font, offhandStack, mouseX, mouseY);
                 } else {
-                    Text tooltip = Text.translatable("gui.visiblearmorslots.empty.offhand");
-                    drawContext.drawTooltip(mc.textRenderer, tooltip, mouseX, mouseY);
+                    Component tooltip = Component.translatable("gui.visiblearmorslots.empty.offhand");
+                    graphics.setTooltipForNextFrame(mc.font, tooltip, mouseX, mouseY);
                 }
             }
         } catch (Exception e) {
@@ -243,7 +237,7 @@ public class ArmorSlotsOverlay {
         if (!visible)
             return false;
 
-        MinecraftClient mc = MinecraftClient.getInstance();
+        Minecraft mc = Minecraft.getInstance();
 
         // Check armor slots
         for (ArmorSlotWidget slot : armorSlots) {
@@ -267,26 +261,26 @@ public class ArmorSlotsOverlay {
         return false;
     }
 
-    private void handleSlotClick(SlotInfo.SlotType slotType, int button, MinecraftClient mc) {
-        if (mc.player == null || mc.currentScreen == null)
+    private void handleSlotClick(SlotInfo.SlotType slotType, int button, Minecraft mc) {
+        if (mc.player == null || mc.gui.screen() == null)
             return;
 
-        boolean isShiftPressed = Screen.hasShiftDown();
-        boolean isCtrlPressed = Screen.hasControlDown();
+        boolean isShiftPressed = mc.hasShiftDown();
+        boolean isCtrlPressed = mc.hasControlDown();
 
         ActionType actionType = isShiftPressed ? ActionType.QUICK_TRANSFER : ActionType.MOUSE_SWAP;
         sendSlotAction(actionType, slotType.getEquipmentSlot(), -1, isShiftPressed, isCtrlPressed);
     }
 
-    private void sendSlotAction(ActionType actionType, net.minecraft.entity.EquipmentSlot targetSlot,
+    private void sendSlotAction(ActionType actionType, net.minecraft.world.entity.EquipmentSlot targetSlot,
             int hotbarSlot, boolean isShiftPressed, boolean isCtrlPressed) {
-        MinecraftClient mc = MinecraftClient.getInstance();
+        Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) {
             dev.quentintyr.visiblearmorslots.Visiblearmorslots.LOGGER.warn("Cannot send slot action - player is null");
             return;
         }
-        
-        boolean isCreative = mc.player.getAbilities().creativeMode;
+
+        boolean isCreative = mc.player.getAbilities().instabuild;
 
         SlotActionPayload payload = new SlotActionPayload(
                 actionType, targetSlot, hotbarSlot,
@@ -305,14 +299,14 @@ public class ArmorSlotsOverlay {
         if (!visible)
             return false;
 
-        MinecraftClient mc = MinecraftClient.getInstance();
+        Minecraft mc = Minecraft.getInstance();
 
         // Handle Q key for dropping armor
         if (keyCode == KeyCodes.KEY_Q) {
             // Get mouse position to determine which slot to drop
-            double mouseX = mc.mouse.getX() * (double) mc.getWindow().getScaledWidth()
+            double mouseX = mc.mouseHandler.xpos() * (double) mc.getWindow().getGuiScaledWidth()
                     / (double) mc.getWindow().getWidth();
-            double mouseY = mc.mouse.getY() * (double) mc.getWindow().getScaledHeight()
+            double mouseY = mc.mouseHandler.ypos() * (double) mc.getWindow().getGuiScaledHeight()
                     / (double) mc.getWindow().getHeight();
 
             // Check which slot the mouse is over
@@ -335,9 +329,9 @@ public class ArmorSlotsOverlay {
             int hotbarSlot = keyCode - KeyCodes.KEY_1;
 
             // Get mouse position to determine which slot to swap
-            double mouseX = mc.mouse.getX() * (double) mc.getWindow().getScaledWidth()
+            double mouseX = mc.mouseHandler.xpos() * (double) mc.getWindow().getGuiScaledWidth()
                     / (double) mc.getWindow().getWidth();
-            double mouseY = mc.mouse.getY() * (double) mc.getWindow().getScaledHeight()
+            double mouseY = mc.mouseHandler.ypos() * (double) mc.getWindow().getGuiScaledHeight()
                     / (double) mc.getWindow().getHeight();
 
             // Check which armor slot the mouse is over

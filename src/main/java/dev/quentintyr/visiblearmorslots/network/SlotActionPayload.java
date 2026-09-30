@@ -1,11 +1,11 @@
 package dev.quentintyr.visiblearmorslots.network;
 
 import dev.quentintyr.visiblearmorslots.action.ActionType;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.Identifier;
 
 /**
  * Typed payload for slot actions used with the new payload registry API.
@@ -15,18 +15,18 @@ public record SlotActionPayload(ActionType actionType,
         int hotbarSlot,
         boolean isShiftPressed,
         boolean isCtrlPressed,
-        boolean isCreativeMode) implements CustomPayload {
+        boolean isCreativeMode) implements CustomPacketPayload {
 
-    public static final CustomPayload.Id<SlotActionPayload> ID = new CustomPayload.Id<>(
-            Identifier.of("visiblearmorslots", "slot_action"));
+    public static final CustomPacketPayload.Type<SlotActionPayload> ID = new CustomPacketPayload.Type<>(
+            Identifier.fromNamespaceAndPath("visiblearmorslots", "slot_action"));
 
     // Encode/decode all fields so client and server agree on the payload shape.
-    public static final PacketCodec<PacketByteBuf, SlotActionPayload> CODEC = PacketCodec.of(
-            (payload, buf) -> {
-                buf.writeEnumConstant(payload.actionType());
+    public static final StreamCodec<RegistryFriendlyByteBuf, SlotActionPayload> CODEC = StreamCodec.of(
+            (buf, payload) -> {
+                buf.writeEnum(payload.actionType());
                 buf.writeBoolean(payload.targetSlot() != null);
                 if (payload.targetSlot() != null) {
-                    buf.writeEnumConstant(payload.targetSlot());
+                    buf.writeEnum(payload.targetSlot());
                 }
                 buf.writeVarInt(payload.hotbarSlot());
                 buf.writeBoolean(payload.isShiftPressed());
@@ -34,10 +34,10 @@ public record SlotActionPayload(ActionType actionType,
                 buf.writeBoolean(payload.isCreativeMode());
             },
             buf -> {
-                ActionType actionType = buf.readEnumConstant(ActionType.class);
+                ActionType actionType = buf.readEnum(ActionType.class);
                 EquipmentSlot targetSlot = null;
                 if (buf.readBoolean()) {
-                    targetSlot = buf.readEnumConstant(EquipmentSlot.class);
+                    targetSlot = buf.readEnum(EquipmentSlot.class);
                 }
                 int hotbarSlot = buf.readVarInt();
                 boolean isShiftPressed = buf.readBoolean();
@@ -48,7 +48,7 @@ public record SlotActionPayload(ActionType actionType,
             });
 
     @Override
-    public CustomPayload.Id<? extends CustomPayload> getId() {
+    public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
         return ID;
     }
 }

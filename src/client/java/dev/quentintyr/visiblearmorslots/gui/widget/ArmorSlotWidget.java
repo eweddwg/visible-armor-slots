@@ -1,12 +1,14 @@
 package dev.quentintyr.visiblearmorslots.gui.widget;
 
 import dev.quentintyr.visiblearmorslots.gui.SlotInfo;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.item.ArmorItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.equipment.Equippable;
+import net.minecraft.resources.Identifier;
 
 /**
  * Custom slot widget for armor pieces with validation
@@ -16,13 +18,13 @@ public class ArmorSlotWidget {
     private final int x;
     private final int y;
 
-    private static final Identifier EMPTY_HELMET_SLOT = Identifier.of(
+    private static final Identifier EMPTY_HELMET_SLOT = Identifier.parse(
             "minecraft:textures/item/empty_armor_slot_helmet.png");
-    private static final Identifier EMPTY_CHEST_SLOT = Identifier.of(
+    private static final Identifier EMPTY_CHEST_SLOT = Identifier.parse(
             "minecraft:textures/item/empty_armor_slot_chestplate.png");
-    private static final Identifier EMPTY_LEGS_SLOT = Identifier.of(
+    private static final Identifier EMPTY_LEGS_SLOT = Identifier.parse(
             "minecraft:textures/item/empty_armor_slot_leggings.png");
-    private static final Identifier EMPTY_BOOTS_SLOT = Identifier.of(
+    private static final Identifier EMPTY_BOOTS_SLOT = Identifier.parse(
             "minecraft:textures/item/empty_armor_slot_boots.png");
 
     public ArmorSlotWidget(SlotInfo.SlotType slotType, int x, int y) {
@@ -31,15 +33,15 @@ public class ArmorSlotWidget {
         this.y = y;
     }
 
-    public void render(DrawContext context, ItemStack stack, int mouseX, int mouseY) {
+    public void render(GuiGraphicsExtractor context, ItemStack stack, int mouseX, int mouseY) {
         if (stack.isEmpty()) {
             // Draw empty slot texture
             Identifier emptyTexture = getEmptySlotTexture();
-            context.drawTexture(emptyTexture, x, y, 0, 0, 16, 16, 16, 16);
+            context.blit(RenderPipelines.GUI_TEXTURED, emptyTexture, x, y, 0, 0, 16, 16, 16, 16);
         } else {
             // Draw item with count (always 1 for armor)
-            context.drawItem(stack, x, y);
-            context.drawItemInSlot(net.minecraft.client.MinecraftClient.getInstance().textRenderer, stack, x, y);
+            context.item(stack, x, y);
+            context.itemDecorations(Minecraft.getInstance().font, stack, x, y);
         }
     }
 
@@ -47,12 +49,12 @@ public class ArmorSlotWidget {
         if (stack.isEmpty())
             return true;
 
-        Item item = stack.getItem();
-        if (!(item instanceof ArmorItem armorItem)) {
+        Equippable equippable = stack.get(DataComponents.EQUIPPABLE);
+        if (equippable == null) {
             return false;
         }
 
-        EquipmentSlot itemSlot = armorItem.getSlotType();
+        EquipmentSlot itemSlot = equippable.slot();
         return itemSlot == slotType.getEquipmentSlot();
     }
 

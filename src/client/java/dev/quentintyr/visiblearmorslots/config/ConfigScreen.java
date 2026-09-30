@@ -1,11 +1,14 @@
 package dev.quentintyr.visiblearmorslots.config;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.*;
-import net.minecraft.screen.ScreenTexts;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.AbstractSliderButton;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.CycleButton;
+import net.minecraft.client.gui.layouts.FrameLayout;
+import net.minecraft.client.gui.layouts.GridLayout;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 
 import dev.quentintyr.visiblearmorslots.config.ModConfig;
 import dev.quentintyr.visiblearmorslots.config.ContainerListWidget;
@@ -20,11 +23,11 @@ public class ConfigScreen extends Screen {
     private Category currentCategory = Category.SETTINGS;
 
     private ContainerListWidget containerListWidget;
-    private ButtonWidget toggleAllButton;
+    private Button toggleAllButton;
     private boolean allEnabled = true;
 
     public ConfigScreen(Screen parent) {
-        super(Text.translatable("config.visiblearmorslots.title"));
+        super(Component.translatable("config.visiblearmorslots.title"));
         this.parent = parent;
         this.config = ModConfig.getInstance();
     }
@@ -37,25 +40,25 @@ public class ConfigScreen extends Screen {
         int gap = 5;
         int startX = (this.width - (buttonWidth * 2 + gap)) / 2;
 
-        ButtonWidget settingsBtn = ButtonWidget.builder(
-                Text.translatable("config.visiblearmorslots.tab.settings"),
+        Button settingsBtn = Button.builder(
+                Component.translatable("config.visiblearmorslots.tab.settings"),
                 b -> switchCategory(Category.SETTINGS)
-        ).dimensions(startX, topBarY, buttonWidth, buttonHeight).build();
+        ).bounds(startX, topBarY, buttonWidth, buttonHeight).build();
         settingsBtn.active = currentCategory != Category.SETTINGS;
-        addDrawableChild(settingsBtn);
+        addRenderableWidget(settingsBtn);
 
-        ButtonWidget containersBtn = ButtonWidget.builder(
-                Text.translatable("config.visiblearmorslots.tab.containers"),
+        Button containersBtn = Button.builder(
+                Component.translatable("config.visiblearmorslots.tab.containers"),
                 b -> switchCategory(Category.CONTAINERS)
-        ).dimensions(startX + buttonWidth + gap, topBarY, buttonWidth, buttonHeight).build();
+        ).bounds(startX + buttonWidth + gap, topBarY, buttonWidth, buttonHeight).build();
         containersBtn.active = currentCategory != Category.CONTAINERS;
-        addDrawableChild(containersBtn);
+        addRenderableWidget(containersBtn);
 
         if (currentCategory == Category.SETTINGS) {
             initSettingsContent();
-            addDrawableChild(
-                    ButtonWidget.builder(ScreenTexts.DONE, b -> close())
-                            .dimensions(width / 2 - 100, height - 30, 200, 20)
+            addRenderableWidget(
+                    Button.builder(Component.translatable("gui.done"), b -> onClose())
+                            .bounds(width / 2 - 100, height - 30, 200, 20)
                             .build()
             );
         } else {
@@ -65,55 +68,55 @@ public class ConfigScreen extends Screen {
 
     private void switchCategory(Category newCategory) {
         currentCategory = newCategory;
-        resize(client, width, height);
+        resize(width, height);
     }
 
     private void initSettingsContent() {
-        GridWidget grid = new GridWidget();
-        grid.getMainPositioner().marginX(10).marginY(4);
-        GridWidget.Adder adder = grid.createAdder(1);
+        GridLayout grid = new GridLayout();
+        grid.columnSpacing(10);
+        grid.rowSpacing(4);
+        GridLayout.RowHelper adder = grid.createRowHelper(1);
 
         int w = 220;
         int h = 20;
 
-        adder.add(CyclingButtonWidget.onOffBuilder(config.isEnabled())
-                .build(0, 0, w, h,
-                        Text.translatable("config.visiblearmorslots.enabled"),
+        adder.addChild(CycleButton.onOffBuilder(config.isEnabled())
+                .create(0, 0, w, h,
+                        Component.translatable("config.visiblearmorslots.enabled"),
                         (b, v) -> config.setEnabled(v)));
 
-        adder.add(CyclingButtonWidget.onOffBuilder(config.shouldShowTooltips())
-                .build(0, 0, w, h,
-                        Text.translatable("config.visiblearmorslots.showTooltips"),
+        adder.addChild(CycleButton.onOffBuilder(config.shouldShowTooltips())
+                .create(0, 0, w, h,
+                        Component.translatable("config.visiblearmorslots.showTooltips"),
                         (b, v) -> config.setShowTooltips(v)));
 
-        adder.add(CyclingButtonWidget.onOffBuilder(config.isShowOffhandSlot())
-                .build(0, 0, w, h,
-                        Text.translatable("config.visiblearmorslots.showOffhand"),
+        adder.addChild(CycleButton.onOffBuilder(config.isShowOffhandSlot())
+                .create(0, 0, w, h,
+                        Component.translatable("config.visiblearmorslots.showOffhand"),
                         (b, v) -> config.setShowOffhandSlot(v)));
 
-        adder.add(CyclingButtonWidget.onOffBuilder(config.isDarkMode())
-                .build(0, 0, w, h,
-                        Text.translatable("config.visiblearmorslots.darkMode"),
+        adder.addChild(CycleButton.onOffBuilder(config.isDarkMode())
+                .create(0, 0, w, h,
+                        Component.translatable("config.visiblearmorslots.darkMode"),
                         (b, v) -> config.setDarkMode(v)));
 
-        adder.add(CyclingButtonWidget.onOffBuilder(config.isAutoPositioning())
-                .build(0, 0, w, h,
-                        Text.translatable("config.visiblearmorslots.autoPosition"),
+        adder.addChild(CycleButton.onOffBuilder(config.isAutoPositioning())
+                .create(0, 0, w, h,
+                        Component.translatable("config.visiblearmorslots.autoPosition"),
                         (b, v) -> config.setAutoPositioning(v)));
 
-        adder.add(CyclingButtonWidget.<ModConfig.Side>builder(s -> Text.literal(s.toString()))
-                .values(ModConfig.Side.LEFT, ModConfig.Side.RIGHT)
-                .initially(config.getPositioning())
-                .build(0, 0, w, h,
-                        Text.translatable("config.visiblearmorslots.side"),
+        adder.addChild(CycleButton.builder(s -> Component.literal(s.toString()), config.getPositioning())
+                .withValues(ModConfig.Side.LEFT, ModConfig.Side.RIGHT)
+                .create(0, 0, w, h,
+                        Component.translatable("config.visiblearmorslots.side"),
                         (b, s) -> config.setPositioning(s)));
 
-        adder.add(new SliderWidget(0, 0, w, h, 
-                Text.translatable("config.visiblearmorslots.marginX", config.getMarginX()), 
+        adder.addChild(new AbstractSliderButton(0, 0, w, h,
+                Component.translatable("config.visiblearmorslots.marginX", config.getMarginX()),
                 config.getMarginX() / 31.0) {
             @Override
             protected void updateMessage() {
-                setMessage(Text.translatable("config.visiblearmorslots.marginX", (int)(value * 31)));
+                setMessage(Component.translatable("config.visiblearmorslots.marginX", (int)(value * 31)));
             }
             @Override
             protected void applyValue() {
@@ -121,12 +124,12 @@ public class ConfigScreen extends Screen {
             }
         });
 
-        adder.add(new SliderWidget(0, 0, w, h, 
-                Text.translatable("config.visiblearmorslots.marginY", config.getMarginY()), 
+        adder.addChild(new AbstractSliderButton(0, 0, w, h,
+                Component.translatable("config.visiblearmorslots.marginY", config.getMarginY()),
                 (config.getMarginY() + 64) / 127.0) {
             @Override
             protected void updateMessage() {
-                setMessage(Text.translatable("config.visiblearmorslots.marginY", (int)(value * 127) - 64));
+                setMessage(Component.translatable("config.visiblearmorslots.marginY", (int)(value * 127) - 64));
             }
             @Override
             protected void applyValue() {
@@ -134,9 +137,13 @@ public class ConfigScreen extends Screen {
             }
         });
 
-        grid.refreshPositions();
-        SimplePositioningWidget.setPos(grid, 0, 50, width, height - 80, 0.5f, 0f);
-        grid.forEachChild(this::addDrawableChild);
+        grid.arrangeElements();
+        FrameLayout.centerInRectangle(grid, 0, 50, width, height - 80);
+        grid.visitChildren(element -> {
+            if (element instanceof AbstractWidget widget) {
+                addRenderableWidget(widget);
+            }
+        });
     }
 
     private void initContainersContent() {
@@ -144,40 +151,40 @@ public class ConfigScreen extends Screen {
         int listBottom = height - 60;
 
         containerListWidget = new ContainerListWidget(
-                client, width, listBottom - listTop, listTop, 25, config
+                minecraft, width, listBottom - listTop, listTop, 25, config
         );
-        addDrawableChild(containerListWidget);
+        addRenderableWidget(containerListWidget);
 
         int bw = 100;
         int spacing = 5;
         int startX = (width - (bw * 3 + spacing * 2)) / 2;
         int y = height - 28;
 
-        toggleAllButton = ButtonWidget.builder(
-                Text.empty(),
+        toggleAllButton = Button.builder(
+                Component.empty(),
                 b -> {
                     allEnabled = !allEnabled;
                     containerListWidget.setAllEnabled(allEnabled);
                     updateToggleAllButton();
-                }).dimensions(startX, y, bw, 20).build();
-        addDrawableChild(toggleAllButton);
+                }).bounds(startX, y, bw, 20).build();
+        addRenderableWidget(toggleAllButton);
         updateToggleAllButton();
 
-        addDrawableChild(ButtonWidget.builder(
-                Text.translatable("config.visiblearmorslots.containers.reset"),
+        addRenderableWidget(Button.builder(
+                Component.translatable("config.visiblearmorslots.containers.reset"),
                 b -> {
                     config.resetContainersToDefault();
                     containerListWidget.refreshEntries();
-                }).dimensions(startX + bw + spacing, y, bw, 20).build());
+                }).bounds(startX + bw + spacing, y, bw, 20).build());
 
-        addDrawableChild(ButtonWidget.builder(
-                ScreenTexts.DONE,
-                b -> close()
-        ).dimensions(startX + (bw + spacing) * 2, y, bw, 20).build());
+        addRenderableWidget(Button.builder(
+                Component.translatable("gui.done"),
+                b -> onClose()
+        ).bounds(startX + (bw + spacing) * 2, y, bw, 20).build());
     }
 
     private void updateToggleAllButton() {
-        toggleAllButton.setMessage(Text.translatable(
+        toggleAllButton.setMessage(Component.translatable(
                 allEnabled
                         ? "config.visiblearmorslots.containers.disableAll"
                         : "config.visiblearmorslots.containers.enableAll"
@@ -185,16 +192,16 @@ public class ConfigScreen extends Screen {
     }
 
     @Override
-    public void render(DrawContext ctx, int mx, int my, float delta) {
-        super.renderBackground(ctx, mx, my, delta);
-        super.render(ctx, mx, my, delta);
-        
-        ctx.drawCenteredTextWithShadow(textRenderer, title, width / 2, 8, 0xFFFFFF);
-        
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+        super.extractBackground(graphics, mouseX, mouseY, delta);
+        super.extractRenderState(graphics, mouseX, mouseY, delta);
+
+        graphics.centeredText(font, title, width / 2, 8, 0xFFFFFF);
+
         if (currentCategory == Category.CONTAINERS) {
-            ctx.drawCenteredTextWithShadow(
-                    textRenderer,
-                    Text.translatable("config.visiblearmorslots.containers.help").getString(),
+            graphics.centeredText(
+                    font,
+                    Component.translatable("config.visiblearmorslots.containers.help").getString(),
                     width / 2,
                     height - 45,
                     0x808080
@@ -203,10 +210,10 @@ public class ConfigScreen extends Screen {
     }
 
     @Override
-    public void close() {
+    public void onClose() {
         ModConfig.save();
-        if (client != null) {
-            client.setScreen(parent);
+        if (minecraft != null) {
+            minecraft.gui.setScreen(parent);
         }
     }
 }
