@@ -87,6 +87,54 @@ jar {
 	}
 }
 
+// TEMP-DIAGNOSTIC (scratch, will be reverted): find client classes + methods across all MC jars
+tasks.register("diagnoseMc") {
+	doLast {
+		def api = org.objectweb.asm.Opcodes.ASM9
+		def base = new File(projectDir, ".gradle/loom-cache")
+		def jars = []
+		base.eachFileRecurse { f -> if (f.name.endsWith(".jar") && f.path.contains("minecraft")) jars.add(f) }
+		jars.each { println "DIAG_JAR=" + it.absolutePath }
+		def findClass = { String simple ->
+			for (j in jars) {
+				def zip = new java.util.zip.ZipFile(j)
+				try {
+					def en = zip.entries()
+					while (en.hasMoreElements()) {
+						def n = en.nextElement().name
+						if (n.endsWith("/" + simple + ".class") || n == simple + ".class") return [j, n]
+					}
+				} finally { zip.close() }
+			}
+			return null
+		}
+		def dump = { String simple, rx, boolean fieldsToo ->
+			def hit = findClass(simple)
+			if (hit == null) { println "DIAG_NOFILE $simple"; return }
+			println "DIAG_IN $simple :: ${hit[0].name} -> ${hit[1]}"
+			def zip = new java.util.zip.ZipFile(hit[0])
+			new org.objectweb.asm.ClassReader(zip.getInputStream(zip.getEntry(hit[1]))).accept(new org.objectweb.asm.ClassVisitor(api) {
+				@Override org.objectweb.asm.MethodVisitor visitMethod(int acc, String mname, String desc, String sig, String[] exc) {
+					if (rx == null || mname =~ rx) println "DIAG_M $simple :: $mname $desc"
+					return null
+				}
+				@Override org.objectweb.asm.FieldVisitor visitField(int acc, String fname, String desc, String sig, Object val) {
+					if (fieldsToo && (rx == null || fname =~ rx)) println "DIAG_F $simple :: $fname $desc"
+					return null
+				}
+			}, org.objectweb.asm.ClassReader.SKIP_CODE | org.objectweb.asm.ClassReader.SKIP_DEBUG)
+			zip.close()
+		}
+		["GuiGraphics", "GridLayout", "AbstractSlider", "SimpleLayout", "CycleButton", "ObjectSelectionList", "CommonComponents", "Button", "RenderPipelines", "Font", "Window", "Inventory", "InputConstants", "MouseHandler", "Gui"].each { dump(it, null, false) }
+		dump("Screen", ~/hasShiftDown|hasControlDown|setScreen|render|close|resize/, true)
+		dump("Minecraft", ~/mouse|screen|gui|font|window|player/, true)
+		dump("Inventory", ~/rmor|getItem|setItem/, false)
+		dump("CycleButton", ~/uild|alues|nitial/, false)
+		dump("ObjectSelectionList", ~/crollbar|owWidth|inecraft|learEntries|ddEntry|hildren|etRight/, true)
+		dump("AbstractSlider", ~/alue|etMessage|pplyValue/, true)
+	}
+}
+
 // configure the maven publication
 publishing {
 	publications {
