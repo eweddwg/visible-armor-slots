@@ -13,7 +13,7 @@ public class NetworkManager {
     public static void initialize() {
         try {
             // Register the payload type (server-side C2S)
-            PayloadTypeRegistry.playC2S().register(SlotActionPayload.ID, SlotActionPayload.CODEC);
+            PayloadTypeRegistry.serverboundPlay().register(SlotActionPayload.ID, SlotActionPayload.CODEC);
 
             // Register receiver using the typed payload handler
             ServerPlayNetworking.registerGlobalReceiver(SlotActionPayload.ID, (payload, context) -> {

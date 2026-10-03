@@ -2,16 +2,16 @@ package dev.quentintyr.visiblearmorslots.action.handler.resolver;
 
 import dev.quentintyr.visiblearmorslots.network.SlotActionPayload;
 import dev.quentintyr.visiblearmorslots.util.InventoryUtil;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * Handles shift-click actions to move items to inventory
  */
 public class QuickTransferResolver {
 
-    public static void resolve(SlotActionPayload action, ServerPlayerEntity player) {
+    public static void resolve(SlotActionPayload action, ServerPlayer player) {
         if (player == null || player.getInventory() == null) {
             return;
         }
@@ -20,20 +20,20 @@ public class QuickTransferResolver {
         if (targetSlot == null)
             return;
 
-        ItemStack equipped = player.getEquippedStack(targetSlot);
+        ItemStack equipped = player.getItemBySlot(targetSlot);
         if (equipped.isEmpty())
             return;
 
         // Try to move equipped item to main inventory
         if (insertIntoMainInventory(player, equipped)) {
-            player.equipStack(targetSlot, ItemStack.EMPTY);
+            player.setItemSlot(targetSlot, ItemStack.EMPTY);
 
             // Force inventory sync to client
             InventoryUtil.syncInventory(player);
         }
     }
 
-    private static boolean insertIntoMainInventory(ServerPlayerEntity player, ItemStack stack) {
+    private static boolean insertIntoMainInventory(ServerPlayer player, ItemStack stack) {
         // Try to insert into player's main inventory (slots 0-35)
         for (int i = 9; i < 36; i++) { // Skip hotbar, start with main inventory
             ItemStack slotStack = player.getInventory().getStack(i);

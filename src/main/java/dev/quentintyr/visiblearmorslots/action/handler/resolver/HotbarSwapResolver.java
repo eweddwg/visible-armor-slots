@@ -2,17 +2,17 @@ package dev.quentintyr.visiblearmorslots.action.handler.resolver;
 
 import dev.quentintyr.visiblearmorslots.network.SlotActionPayload;
 import dev.quentintyr.visiblearmorslots.util.InventoryUtil;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.item.ArmorItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * Handles number key swapping with hotbar slots
  */
 public class HotbarSwapResolver {
 
-    public static void resolve(SlotActionPayload action, ServerPlayerEntity player) {
+    public static void resolve(SlotActionPayload action, ServerPlayer player) {
         if (player == null || player.getInventory() == null) {
             return;
         }
@@ -25,7 +25,7 @@ public class HotbarSwapResolver {
         if (hotbarSlot < 0 || hotbarSlot > 8)
             return;
 
-        ItemStack equipped = player.getEquippedStack(targetSlot);
+        ItemStack equipped = player.getItemBySlot(targetSlot);
         ItemStack hotbarStack = player.getInventory().getStack(hotbarSlot);
 
         // Validate that the hotbar item can be equipped in this slot
@@ -34,7 +34,7 @@ public class HotbarSwapResolver {
         }
 
         // Swap the items
-        player.equipStack(targetSlot, hotbarStack.copy());
+        player.setItemSlot(targetSlot, hotbarStack.copy());
         player.getInventory().setStack(hotbarSlot, equipped.copy());
 
         // Force inventory sync to client
@@ -48,7 +48,7 @@ public class HotbarSwapResolver {
 
         // Check if it's armor and matches the slot
         if (stack.getItem() instanceof ArmorItem armorItem) {
-            return armorItem.getSlotType() == slot;
+            return armorItem.getEquipmentSlot() == slot;
         }
 
         // Allow non-armor items only in offhand
