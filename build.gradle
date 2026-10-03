@@ -104,7 +104,7 @@ tasks.register("diagnoseMc") {
 			all.findAll { it.contains(key) && it.endsWith(".class") }.take(15).each { println "DIAG_FIND $key -> $it" }
 		}
 		def api = org.objectweb.asm.Opcodes.ASM9
-		["net/minecraft/server/level/ServerPlayer.class": ~/drop|getInventory/, "net/minecraft/world/entity/player/Inventory.class": ~/getItem|setItem|getStack|setStack/, "net/minecraft/world/item/ItemStack.class": ~/getMaxStackSize|getMaxCount|grow|increment|isEmpty|getCount|getItem/, "net/minecraft/network/FriendlyByteBuf.class": ~/writeVarInt|readVarInt|writeBoolean|readBoolean|writeEnum|readEnum/, "net/minecraft/world/inventory/AbstractContainerMenu.class": ~/getCarried|setCarried|sendAllDataToRemote|broadcastChanges|slotsChanged/, "net/minecraft/world/entity/LivingEntity.class": ~/getItemBySlot|setItemSlot|getMainHandItem|getOffhandItem|setItemInHand/, "net/minecraft/resources/Identifier.class": ~/fromNamespaceAndPath|of\(/, "net/minecraft/world/item/equipment/Equippable.class": ~/slot|allowed|swappable|equip/, "net/minecraft/network/codec/StreamCodec.class": ~/of\(|composite/].each { name, rx ->
+		["net/minecraft/world/item/Item.class": ~/axStackSize|axCount|quippable/, "net/minecraft/world/item/ItemStack.class": ~/get\(|has\(|set\(|remove\(|getOrDefault|getComponents|isEmpty/, "net/minecraft/core/component/DataComponents.class": ~/QUIPPABLE|TACK_SIZE/].each { name, rx ->
 			def ent = zip.getEntry(name)
 			if (ent == null) { println "DIAG_NOFILE $name"; return }
 			new org.objectweb.asm.ClassReader(zip.getInputStream(ent)).accept(new org.objectweb.asm.ClassVisitor(api) {
@@ -112,14 +112,22 @@ tasks.register("diagnoseMc") {
 					if (mname =~ rx) println "DIAG_M $name :: $mname $desc"
 					return null
 				}
+				@Override org.objectweb.asm.FieldVisitor visitField(int acc, String fname, String desc, String sig, Object val) {
+					if (fname =~ rx) println "DIAG_F $name :: $fname $desc"
+					return null
+				}
 			}, org.objectweb.asm.ClassReader.SKIP_CODE | org.objectweb.asm.ClassReader.SKIP_DEBUG)
 		}
-		["net/minecraft/world/entity/player/Player.class": ~/containerMenu|inventoryMenu/].each { name, rx ->
+		["net/minecraft/util/Prediction.class"].each { name ->
 			def ent = zip.getEntry(name)
 			if (ent == null) { println "DIAG_NOFILE $name"; return }
 			new org.objectweb.asm.ClassReader(zip.getInputStream(ent)).accept(new org.objectweb.asm.ClassVisitor(api) {
+				@Override org.objectweb.asm.MethodVisitor visitMethod(int acc, String mname, String desc, String sig, String[] exc) {
+					println "DIAG_PRED_M $mname $desc"
+					return null
+				}
 				@Override org.objectweb.asm.FieldVisitor visitField(int acc, String fname, String desc, String sig, Object val) {
-					if (fname =~ rx) println "DIAG_F $name :: $fname $desc"
+					println "DIAG_PRED_F $fname $desc"
 					return null
 				}
 			}, org.objectweb.asm.ClassReader.SKIP_CODE | org.objectweb.asm.ClassReader.SKIP_DEBUG)
