@@ -115,7 +115,7 @@ tasks.register("diagnoseMc") {
 			def zip = new java.util.zip.ZipFile(hit[0])
 			new org.objectweb.asm.ClassReader(zip.getInputStream(zip.getEntry(hit[1]))).accept(new org.objectweb.asm.ClassVisitor(api) {
 				@Override org.objectweb.asm.MethodVisitor visitMethod(int acc, String mname, String desc, String sig, String[] exc) {
-					if (!mname.startsWith("lambda$") && mname != "<clinit>") println "DIAG_M $simple :: $mname $desc"
+					if (!mname.startsWith('lambda$') && mname != '<clinit>') println "DIAG_M $simple :: $mname $desc"
 					return null
 				}
 				@Override org.objectweb.asm.FieldVisitor visitField(int acc, String fname, String desc, String sig, Object val) {
