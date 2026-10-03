@@ -27,7 +27,7 @@ public class HotbarSwapResolver {
             return;
 
         ItemStack equipped = player.getItemBySlot(targetSlot);
-        ItemStack hotbarStack = player.getInventory().getStack(hotbarSlot);
+        ItemStack hotbarStack = player.getInventory().getItem(hotbarSlot);
 
         // Validate that the hotbar item can be equipped in this slot
         if (!canEquipInSlot(hotbarStack, targetSlot)) {
@@ -36,7 +36,7 @@ public class HotbarSwapResolver {
 
         // Swap the items
         player.setItemSlot(targetSlot, hotbarStack.copy());
-        player.getInventory().setStack(hotbarSlot, equipped.copy());
+        player.getInventory().setItem(hotbarSlot, equipped.copy());
 
         // Force inventory sync to client
         InventoryUtil.syncInventory(player);
