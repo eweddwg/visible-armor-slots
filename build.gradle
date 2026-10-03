@@ -125,33 +125,14 @@ tasks.register("diagnoseMc") {
 			}, org.objectweb.asm.ClassReader.SKIP_CODE | org.objectweb.asm.ClassReader.SKIP_DEBUG)
 			zip.close()
 		}
-		fullDump("GuiGraphicsExtractor", ~/item|temDecor|ooltip|ext confir/)
-		fullDump("GuiGraphicsExtractor", ~/^fakeItem|^renderItem|^blit$|^fill$|^text$|^centeredText|^tooltip/)
-		fullDump("AbstractContainerScreen", null)
-		fullDump("LivingEntity", ~/quipment/)
-		fullDump("Player", ~/quipment/)
-		fullDump("MouseButtonEvent", null)
-		fullDump("KeyEvent", null)
-		fullDump("InputWithModifiers", null)
-		fullDump("GridLayout\$RowHelper", null)
+		fullDump("MouseButtonInfo", null)
 		fullDump("ObjectSelectionList", null)
+		fullDump("GridLayout\$RowHelper", null)
+		fullDump("AbstractSliderButton", null)
+		fullDump("AbstractOptionSliderButton", null)
 		fullDump("Component", ~/literal|empty|translatable/)
-		["Slider", "AbstractSlider"].each {
-			def hit = findClass(it)
-			println hit == null ? "DIAG_NOFILE $it" : "DIAG_IN $it :: ${hit[0].name} -> ${hit[1]}"
-		}
-		base.eachFileRecurse { f ->
-			if (f.name.endsWith(".jar") && f.path.contains("minecraft")) {
-				def zip = new java.util.zip.ZipFile(f)
-				try {
-					def en = zip.entries()
-					while (en.hasMoreElements()) {
-						def n = en.nextElement().name
-						if (n.endsWith(".class") && (n.contains("Slider") || n.contains("SelectionList"))) println "DIAG_WHERE ${f.name} -> $n"
-					}
-				} finally { zip.close() }
-			}
-		}
+		fullDump("GuiGraphicsExtractor", ~/renderItem|ItemStack|ooltip|hadow|centeredText/)
+		fullDump("KeyEvent", null)
 	}
 }
 
