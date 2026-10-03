@@ -4,7 +4,7 @@ import dev.quentintyr.visiblearmorslots.config.ModConfig;
 import dev.quentintyr.visiblearmorslots.gui.ArmorSlotsOverlay;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 
 public class VisiblearmorslotsClient implements ClientModInitializer {
     private static ArmorSlotsOverlay armorSlotsOverlay;
@@ -29,7 +29,7 @@ public class VisiblearmorslotsClient implements ClientModInitializer {
     private void registerScreenEvents() {
         // Initialize overlay when screen opens
         ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
-            if (screen instanceof HandledScreen<?> handledScreen) {
+            if (screen instanceof AbstractContainerScreen<?> handledScreen) {
                 armorSlotsOverlay.initialize(handledScreen);
             }
         });

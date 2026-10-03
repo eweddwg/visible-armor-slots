@@ -2,10 +2,9 @@ package dev.quentintyr.visiblearmorslots.mixin.client;
 
 import dev.quentintyr.visiblearmorslots.VisiblearmorslotsClient;
 import dev.quentintyr.visiblearmorslots.gui.ArmorSlotsOverlay;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.client.gui.screen.ingame.InventoryScreen;
-import net.minecraft.client.gui.screen.recipebook.RecipeBookProvider;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -13,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(HandledScreen.class)
+@Mixin(AbstractContainerScreen.class)
 public class HandledScreenMixin {
 
     @Unique
@@ -22,31 +21,26 @@ public class HandledScreenMixin {
     @Unique
     private boolean vas$isRecipeBookOpen() {
         Object self = this;
-        // Preferred: use the mapped interface when available (stable under remap)
-        if (self instanceof RecipeBookProvider provider) {
+        // Reflection for screens that expose the recipe book widget/component.
+        // Mojang name is getRecipeBookComponent, Yarn-era name getRecipeBookWidget.
+        for (String getter : new String[] { "getRecipeBookComponent", "getRecipeBookWidget" }) {
             try {
-                return provider.getRecipeBookWidget().isOpen();
+                java.lang.reflect.Method getWidget = self.getClass().getMethod(getter);
+                Object widget = getWidget.invoke(self);
+                if (widget != null) {
+                    java.lang.reflect.Method isOpen = widget.getClass().getMethod("isOpen");
+                    Object result = isOpen.invoke(widget);
+                    if (result instanceof Boolean b)
+                        return b;
+                }
             } catch (Throwable ignored) {
             }
-        }
-        // Fallback: reflection for unexpected screens that expose the widget
-        try {
-            // Try calling getRecipeBookWidget().isOpen() via reflection
-            java.lang.reflect.Method getWidget = self.getClass().getMethod("getRecipeBookWidget");
-            Object widget = getWidget.invoke(self);
-            if (widget != null) {
-                java.lang.reflect.Method isOpen = widget.getClass().getMethod("isOpen");
-                Object result = isOpen.invoke(widget);
-                if (result instanceof Boolean b)
-                    return b;
-            }
-        } catch (Throwable ignored) {
         }
         return false;
     }
 
-    @Inject(method = "render(Lnet/minecraft/client/gui/DrawContext;IIF)V", at = @At("RETURN"))
-    private void onRender(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+    @Inject(method = "render(Lnet/minecraft/client/gui/GuiGraphics;IIF)V", at = @At("RETURN"))
+    private void onRender(GuiGraphics context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         if ((Object) this instanceof InventoryScreen) {
             return;
         }
@@ -57,7 +51,7 @@ public class HandledScreenMixin {
             vas$lastRecipeOpen = openNow;
             ArmorSlotsOverlay overlayRef = VisiblearmorslotsClient.getArmorSlotsOverlay();
             if (overlayRef != null) {
-                overlayRef.initialize((HandledScreen<?>) (Object) this);
+                overlayRef.initialize((AbstractContainerScreen<?>) (Object) this);
             }
         }
 
