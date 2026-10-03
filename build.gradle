@@ -108,30 +108,29 @@ tasks.register("diagnoseMc") {
 			}
 			return null
 		}
-		def dump = { String simple, rx, boolean fieldsToo ->
+		def fullDump = { String simple ->
 			def hit = findClass(simple)
 			if (hit == null) { println "DIAG_NOFILE $simple"; return }
 			println "DIAG_IN $simple :: ${hit[0].name} -> ${hit[1]}"
 			def zip = new java.util.zip.ZipFile(hit[0])
 			new org.objectweb.asm.ClassReader(zip.getInputStream(zip.getEntry(hit[1]))).accept(new org.objectweb.asm.ClassVisitor(api) {
 				@Override org.objectweb.asm.MethodVisitor visitMethod(int acc, String mname, String desc, String sig, String[] exc) {
-					if (rx == null || mname =~ rx) println "DIAG_M $simple :: $mname $desc"
+					if (!mname.startsWith("lambda$") && mname != "<clinit>") println "DIAG_M $simple :: $mname $desc"
 					return null
 				}
 				@Override org.objectweb.asm.FieldVisitor visitField(int acc, String fname, String desc, String sig, Object val) {
-					if (fieldsToo && (rx == null || fname =~ rx)) println "DIAG_F $simple :: $fname $desc"
+					println "DIAG_F $simple :: $fname $desc"
 					return null
 				}
 			}, org.objectweb.asm.ClassReader.SKIP_CODE | org.objectweb.asm.ClassReader.SKIP_DEBUG)
 			zip.close()
 		}
-		["GuiGraphics", "GridLayout", "AbstractSlider", "SimpleLayout", "CycleButton", "ObjectSelectionList", "CommonComponents", "Button", "RenderPipelines", "Font", "Window", "Inventory", "InputConstants", "MouseHandler", "Gui"].each { dump(it, null, false) }
-		dump("Screen", ~/hasShiftDown|hasControlDown|setScreen|render|close|resize/, true)
-		dump("Minecraft", ~/mouse|screen|gui|font|window|player/, true)
-		dump("Inventory", ~/rmor|getItem|setItem/, false)
-		dump("CycleButton", ~/uild|alues|nitial/, false)
-		dump("ObjectSelectionList", ~/crollbar|owWidth|inecraft|learEntries|ddEntry|hildren|etRight/, true)
-		dump("AbstractSlider", ~/alue|etMessage|pplyValue/, true)
+		["GuiGraphicsExtractor", "Screen", "EntityEquipment", "AbstractWidget", "RenderPipelines", "OptionInstance"].each { fullDump(it) }
+		["CycleButton\$Builder", "Button\$Builder", "GridLayout\$RowHelper", "ObjectSelectionList\$Entry", "LayoutSettings", "LayoutElement"].each { fullDump(it) }
+		["Slider", "SelectionList", "EntryListWidget", "AbstractSlider", "GuiGraphics", "SimpleLayout", "ScreenTexts", "DrawContext"].each {
+			def hit = findClass(it)
+			println hit == null ? "DIAG_NOFILE $it" : "DIAG_IN $it :: ${hit[0].name} -> ${hit[1]}"
+		}
 	}
 }
 
