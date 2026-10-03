@@ -100,14 +100,14 @@ tasks.register("diagnoseMc") {
 		def all = []
 		def e = zip.entries()
 		while (e.hasMoreElements()) { all.add(e.nextElement().name) }
-		["ArmorItem", "Identifier", "ResourceLocation"].each { key ->
-			all.findAll { it.contains(key) && it.endsWith(".class") }.take(10).each { println "DIAG_FIND $key -> $it" }
+		["ArmorItem", "Equippable", "DataComponents", "Prediction", "EquipmentSlot"].each { key ->
+			all.findAll { it.contains(key) && it.endsWith(".class") }.take(15).each { println "DIAG_FIND $key -> $it" }
 		}
-		["net.minecraft.server.level.ServerPlayer", "net.minecraft.world.entity.player.Inventory", "net.minecraft.world.item.ItemStack", "net.minecraft.network.FriendlyByteBuf", "net.minecraft.world.item.ArmorItem"].each { cls ->
+		["net.minecraft.server.level.ServerPlayer", "net.minecraft.world.entity.player.Inventory", "net.minecraft.world.item.ItemStack", "net.minecraft.network.FriendlyByteBuf", "net.minecraft.world.entity.LivingEntity", "net.minecraft.resources.Identifier", "net.minecraft.world.inventory.AbstractContainerMenu"].each { cls ->
 			try {
 				def out = new ByteArrayOutputStream()
-				exec { commandLine "javap", "-cp", mcJar.absolutePath, cls; standardOutput = out; ignoreExitValue = true }
-				out.toString().readLines().grep(~/drop|getItem|setItem|getStack|setStack|getMaxStackSize|getMaxCount|grow|increment|writeVarInt|readVarInt|getEquipmentSlot|fromNamespaceAndPath/).take(40).each { println "DIAG_JAVAP $cls :: $it" }
+				project.exec { commandLine "javap", "-cp", mcJar.absolutePath, cls; standardOutput = out; ignoreExitValue = true }
+				out.toString().readLines().grep(~/drop|getItem|setItem|getStack|setStack|getMaxStackSize|getMaxCount|grow|increment|writeVarInt|readVarInt|getEquipmentSlot|getCarried|setCarried|getItemBySlot|setItemSlot|sendAllDataToRemote|broadcastChanges|slotsChanged|getMainHandItem|getOffhandItem|setItemInHand|fromNamespaceAndPath|getInventory|containerMenu|inventoryMenu|isEmpty|getCount/).take(45).each { println "DIAG_JAVAP $cls :: $it" }
 			} catch (Exception ex) { println "DIAG_JAVAP_FAIL $cls $ex" }
 		}
 	}
