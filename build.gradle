@@ -87,6 +87,32 @@ jar {
 	}
 }
 
+// TEMP-DIAGNOSTIC (scratch, will be reverted): inspect MC jar contents + method names
+tasks.register("diagnoseMc") {
+	doLast {
+		def mcJar = configurations.compileClasspath.files.find { it.name.contains("minecraft") && it.name.endsWith(".jar") }
+		println "DIAG_MC_JAR=" + mcJar
+		if (mcJar == null) return
+		def zip = new java.util.zip.ZipFile(mcJar)
+		["net/minecraft/world/item/ArmorItem.class", "net/minecraft/world/item/ItemStack.class", "net/minecraft/resources/Identifier.class", "net/minecraft/resources/ResourceLocation.class", "net/minecraft/world/entity/EquipmentSlot.class", "net/minecraft/network/RegistryFriendlyByteBuf.class", "net/minecraft/network/FriendlyByteBuf.class", "net/minecraft/network/codec/StreamCodec.class", "net/minecraft/network/protocol/common/custom/CustomPacketPayload.class", "net/minecraft/world/InteractionHand.class", "net/minecraft/server/level/ServerPlayer.class", "net/minecraft/world/inventory/InventoryMenu.class", "net/minecraft/world/inventory/AbstractContainerMenu.class"].each { n ->
+			println "DIAG_HAS $n = ${zip.getEntry(n) != null}"
+		}
+		def all = []
+		def e = zip.entries()
+		while (e.hasMoreElements()) { all.add(e.nextElement().name) }
+		["ArmorItem", "Identifier", "ResourceLocation"].each { key ->
+			all.findAll { it.contains(key) && it.endsWith(".class") }.take(10).each { println "DIAG_FIND $key -> $it" }
+		}
+		["net.minecraft.server.level.ServerPlayer", "net.minecraft.world.entity.player.Inventory", "net.minecraft.world.item.ItemStack", "net.minecraft.network.FriendlyByteBuf", "net.minecraft.world.item.ArmorItem"].each { cls ->
+			try {
+				def out = new ByteArrayOutputStream()
+				exec { commandLine "javap", "-cp", mcJar.absolutePath, cls; standardOutput = out; ignoreExitValue = true }
+				out.toString().readLines().grep(~/drop|getItem|setItem|getStack|setStack|getMaxStackSize|getMaxCount|grow|increment|writeVarInt|readVarInt|getEquipmentSlot|fromNamespaceAndPath/).take(40).each { println "DIAG_JAVAP $cls :: $it" }
+			} catch (Exception ex) { println "DIAG_JAVAP_FAIL $cls $ex" }
+		}
+	}
+}
+
 // configure the maven publication
 publishing {
 	publications {
