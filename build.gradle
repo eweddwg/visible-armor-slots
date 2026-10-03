@@ -87,54 +87,6 @@ jar {
 	}
 }
 
-// TEMP-DIAGNOSTIC (scratch, will be reverted): inspect MC jar contents + method names
-tasks.register("diagnoseMc") {
-	doLast {
-		def mcJar = configurations.compileClasspath.files.find { it.name.contains("minecraft") && it.name.endsWith(".jar") }
-		println "DIAG_MC_JAR=" + mcJar
-		if (mcJar == null) return
-		def zip = new java.util.zip.ZipFile(mcJar)
-		["net/minecraft/world/item/ArmorItem.class", "net/minecraft/world/item/ItemStack.class", "net/minecraft/resources/Identifier.class", "net/minecraft/resources/ResourceLocation.class", "net/minecraft/world/entity/EquipmentSlot.class", "net/minecraft/network/RegistryFriendlyByteBuf.class", "net/minecraft/network/FriendlyByteBuf.class", "net/minecraft/network/codec/StreamCodec.class", "net/minecraft/network/protocol/common/custom/CustomPacketPayload.class", "net/minecraft/world/InteractionHand.class", "net/minecraft/server/level/ServerPlayer.class", "net/minecraft/world/inventory/InventoryMenu.class", "net/minecraft/world/inventory/AbstractContainerMenu.class"].each { n ->
-			println "DIAG_HAS $n = ${zip.getEntry(n) != null}"
-		}
-		def all = []
-		def e = zip.entries()
-		while (e.hasMoreElements()) { all.add(e.nextElement().name) }
-		["ArmorItem", "Equippable", "DataComponents", "Prediction", "EquipmentSlot"].each { key ->
-			all.findAll { it.contains(key) && it.endsWith(".class") }.take(15).each { println "DIAG_FIND $key -> $it" }
-		}
-		def api = org.objectweb.asm.Opcodes.ASM9
-		["net/minecraft/world/item/Item.class": ~/axStackSize|axCount|quippable/, "net/minecraft/world/item/ItemStack.class": ~/get\(|has\(|set\(|remove\(|getOrDefault|getComponents|isEmpty/, "net/minecraft/core/component/DataComponents.class": ~/QUIPPABLE|TACK_SIZE/].each { name, rx ->
-			def ent = zip.getEntry(name)
-			if (ent == null) { println "DIAG_NOFILE $name"; return }
-			new org.objectweb.asm.ClassReader(zip.getInputStream(ent)).accept(new org.objectweb.asm.ClassVisitor(api) {
-				@Override org.objectweb.asm.MethodVisitor visitMethod(int acc, String mname, String desc, String sig, String[] exc) {
-					if (mname =~ rx) println "DIAG_M $name :: $mname $desc"
-					return null
-				}
-				@Override org.objectweb.asm.FieldVisitor visitField(int acc, String fname, String desc, String sig, Object val) {
-					if (fname =~ rx) println "DIAG_F $name :: $fname $desc"
-					return null
-				}
-			}, org.objectweb.asm.ClassReader.SKIP_CODE | org.objectweb.asm.ClassReader.SKIP_DEBUG)
-		}
-		["net/minecraft/util/Prediction.class"].each { name ->
-			def ent = zip.getEntry(name)
-			if (ent == null) { println "DIAG_NOFILE $name"; return }
-			new org.objectweb.asm.ClassReader(zip.getInputStream(ent)).accept(new org.objectweb.asm.ClassVisitor(api) {
-				@Override org.objectweb.asm.MethodVisitor visitMethod(int acc, String mname, String desc, String sig, String[] exc) {
-					println "DIAG_PRED_M $mname $desc"
-					return null
-				}
-				@Override org.objectweb.asm.FieldVisitor visitField(int acc, String fname, String desc, String sig, Object val) {
-					println "DIAG_PRED_F $fname $desc"
-					return null
-				}
-			}, org.objectweb.asm.ClassReader.SKIP_CODE | org.objectweb.asm.ClassReader.SKIP_DEBUG)
-		}
-	}
-}
-
 // configure the maven publication
 publishing {
 	publications {

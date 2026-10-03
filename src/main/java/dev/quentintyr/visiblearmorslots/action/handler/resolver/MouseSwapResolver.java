@@ -2,10 +2,11 @@ package dev.quentintyr.visiblearmorslots.action.handler.resolver;
 
 import dev.quentintyr.visiblearmorslots.network.SlotActionPayload;
 import dev.quentintyr.visiblearmorslots.util.InventoryUtil;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.equipment.Equippable;
 
 /**
  * Handles mouse click actions (left/right click swapping)
@@ -41,9 +42,10 @@ public class MouseSwapResolver {
             return true; // Can always remove items
         }
 
-        // Check if it's armor and matches the slot
-        if (stack.getItem() instanceof ArmorItem armorItem) {
-            return armorItem.getEquipmentSlot() == slot;
+        // Check the equippable component for a matching slot (ArmorItem is gone in 26.x)
+        Equippable equippable = stack.get(DataComponents.EQUIPPABLE);
+        if (equippable != null) {
+            return equippable.slot() == slot;
         }
 
         // Allow any item in offhand

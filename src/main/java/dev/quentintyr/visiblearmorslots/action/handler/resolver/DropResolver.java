@@ -3,6 +3,7 @@ package dev.quentintyr.visiblearmorslots.action.handler.resolver;
 import dev.quentintyr.visiblearmorslots.network.SlotActionPayload;
 import dev.quentintyr.visiblearmorslots.util.InventoryUtil;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 
@@ -24,8 +25,8 @@ public class DropResolver {
         if (equipped.isEmpty())
             return;
 
-        // Drop the equipped item into the world
-        player.drop(equipped, false);
+        // Drop the equipped item into the world (server-authoritative, not predicted)
+        player.drop(equipped, false, Prediction.SERVER_ONLY);
 
         // Clear the equipment slot
         player.setItemSlot(targetSlot, ItemStack.EMPTY);

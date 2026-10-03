@@ -36,15 +36,15 @@ public class QuickTransferResolver {
     private static boolean insertIntoMainInventory(ServerPlayer player, ItemStack stack) {
         // Try to insert into player's main inventory (slots 0-35)
         for (int i = 9; i < 36; i++) { // Skip hotbar, start with main inventory
-            ItemStack slotStack = player.getInventory().getStack(i);
+            ItemStack slotStack = player.getInventory().getItem(i);
             if (slotStack.isEmpty()) {
-                player.getInventory().setStack(i, stack.copy());
+                player.getInventory().setItem(i, stack.copy());
                 return true;
             } else if (slotStack.getItem() == stack.getItem()
-                    && slotStack.getCount() < slotStack.getMaxCount()) {
-                int remaining = slotStack.getMaxCount() - slotStack.getCount();
+                    && slotStack.getCount() < slotStack.getItem().getDefaultMaxStackSize()) {
+                int remaining = slotStack.getItem().getDefaultMaxStackSize() - slotStack.getCount();
                 if (remaining >= stack.getCount()) {
-                    slotStack.increment(stack.getCount());
+                    slotStack.grow(stack.getCount());
                     return true;
                 }
             }
@@ -52,9 +52,9 @@ public class QuickTransferResolver {
 
         // Try hotbar if main inventory is full
         for (int i = 0; i < 9; i++) {
-            ItemStack slotStack = player.getInventory().getStack(i);
+            ItemStack slotStack = player.getInventory().getItem(i);
             if (slotStack.isEmpty()) {
-                player.getInventory().setStack(i, stack.copy());
+                player.getInventory().setItem(i, stack.copy());
                 return true;
             }
         }
