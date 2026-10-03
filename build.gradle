@@ -108,28 +108,49 @@ tasks.register("diagnoseMc") {
 			}
 			return null
 		}
-		def fullDump = { String simple ->
+		def fullDump = { String simple, rx ->
 			def hit = findClass(simple)
 			if (hit == null) { println "DIAG_NOFILE $simple"; return }
 			println "DIAG_IN $simple :: ${hit[0].name} -> ${hit[1]}"
 			def zip = new java.util.zip.ZipFile(hit[0])
 			new org.objectweb.asm.ClassReader(zip.getInputStream(zip.getEntry(hit[1]))).accept(new org.objectweb.asm.ClassVisitor(api) {
 				@Override org.objectweb.asm.MethodVisitor visitMethod(int acc, String mname, String desc, String sig, String[] exc) {
-					if (!mname.startsWith('lambda$') && mname != '<clinit>') println "DIAG_M $simple :: $mname $desc"
+					if (!mname.startsWith('lambda$') && mname != '<clinit>' && (rx == null || mname =~ rx)) println "DIAG_M $simple :: $mname $desc"
 					return null
 				}
 				@Override org.objectweb.asm.FieldVisitor visitField(int acc, String fname, String desc, String sig, Object val) {
-					println "DIAG_F $simple :: $fname $desc"
+					if (rx == null || fname =~ rx) println "DIAG_F $simple :: $fname $desc"
 					return null
 				}
 			}, org.objectweb.asm.ClassReader.SKIP_CODE | org.objectweb.asm.ClassReader.SKIP_DEBUG)
 			zip.close()
 		}
-		["GuiGraphicsExtractor", "Screen", "EntityEquipment", "AbstractWidget", "RenderPipelines", "OptionInstance"].each { fullDump(it) }
-		["CycleButton\$Builder", "Button\$Builder", "GridLayout\$RowHelper", "ObjectSelectionList\$Entry", "LayoutSettings", "LayoutElement"].each { fullDump(it) }
-		["Slider", "SelectionList", "EntryListWidget", "AbstractSlider", "GuiGraphics", "SimpleLayout", "ScreenTexts", "DrawContext"].each {
+		fullDump("GuiGraphicsExtractor", ~/item|temDecor|ooltip|ext confir/)
+		fullDump("GuiGraphicsExtractor", ~/^fakeItem|^renderItem|^blit$|^fill$|^text$|^centeredText|^tooltip/)
+		fullDump("AbstractContainerScreen", null)
+		fullDump("LivingEntity", ~/quipment/)
+		fullDump("Player", ~/quipment/)
+		fullDump("MouseButtonEvent", null)
+		fullDump("KeyEvent", null)
+		fullDump("InputWithModifiers", null)
+		fullDump("GridLayout\$RowHelper", null)
+		fullDump("ObjectSelectionList", null)
+		fullDump("Component", ~/literal|empty|translatable/)
+		["Slider", "AbstractSlider"].each {
 			def hit = findClass(it)
 			println hit == null ? "DIAG_NOFILE $it" : "DIAG_IN $it :: ${hit[0].name} -> ${hit[1]}"
+		}
+		base.eachFileRecurse { f ->
+			if (f.name.endsWith(".jar") && f.path.contains("minecraft")) {
+				def zip = new java.util.zip.ZipFile(f)
+				try {
+					def en = zip.entries()
+					while (en.hasMoreElements()) {
+						def n = en.nextElement().name
+						if (n.endsWith(".class") && (n.contains("Slider") || n.contains("SelectionList"))) println "DIAG_WHERE ${f.name} -> $n"
+					}
+				} finally { zip.close() }
+			}
 		}
 	}
 }
