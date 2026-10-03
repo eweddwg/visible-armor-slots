@@ -103,12 +103,26 @@ tasks.register("diagnoseMc") {
 		["ArmorItem", "Equippable", "DataComponents", "Prediction", "EquipmentSlot"].each { key ->
 			all.findAll { it.contains(key) && it.endsWith(".class") }.take(15).each { println "DIAG_FIND $key -> $it" }
 		}
-		["net.minecraft.server.level.ServerPlayer", "net.minecraft.world.entity.player.Inventory", "net.minecraft.world.item.ItemStack", "net.minecraft.network.FriendlyByteBuf", "net.minecraft.world.entity.LivingEntity", "net.minecraft.resources.Identifier", "net.minecraft.world.inventory.AbstractContainerMenu"].each { cls ->
-			try {
-				def out = new ByteArrayOutputStream()
-				project.exec { commandLine "javap", "-cp", mcJar.absolutePath, cls; standardOutput = out; ignoreExitValue = true }
-				out.toString().readLines().grep(~/drop|getItem|setItem|getStack|setStack|getMaxStackSize|getMaxCount|grow|increment|writeVarInt|readVarInt|getEquipmentSlot|getCarried|setCarried|getItemBySlot|setItemSlot|sendAllDataToRemote|broadcastChanges|slotsChanged|getMainHandItem|getOffhandItem|setItemInHand|fromNamespaceAndPath|getInventory|containerMenu|inventoryMenu|isEmpty|getCount/).take(45).each { println "DIAG_JAVAP $cls :: $it" }
-			} catch (Exception ex) { println "DIAG_JAVAP_FAIL $cls $ex" }
+		def api = org.objectweb.asm.Opcodes.ASM9
+		["net/minecraft/server/level/ServerPlayer.class": ~/drop|getInventory/, "net/minecraft/world/entity/player/Inventory.class": ~/getItem|setItem|getStack|setStack/, "net/minecraft/world/item/ItemStack.class": ~/getMaxStackSize|getMaxCount|grow|increment|isEmpty|getCount|getItem/, "net/minecraft/network/FriendlyByteBuf.class": ~/writeVarInt|readVarInt|writeBoolean|readBoolean|writeEnum|readEnum/, "net/minecraft/world/inventory/AbstractContainerMenu.class": ~/getCarried|setCarried|sendAllDataToRemote|broadcastChanges|slotsChanged/, "net/minecraft/world/entity/LivingEntity.class": ~/getItemBySlot|setItemSlot|getMainHandItem|getOffhandItem|setItemInHand/, "net/minecraft/resources/Identifier.class": ~/fromNamespaceAndPath|of\(/, "net/minecraft/world/item/equipment/Equippable.class": ~/slot|allowed|swappable|equip/, "net/minecraft/network/codec/StreamCodec.class": ~/of\(|composite/].each { name, rx ->
+			def ent = zip.getEntry(name)
+			if (ent == null) { println "DIAG_NOFILE $name"; return }
+			new org.objectweb.asm.ClassReader(zip.getInputStream(ent)).accept(new org.objectweb.asm.ClassVisitor(api) {
+				@Override org.objectweb.asm.MethodVisitor visitMethod(int acc, String mname, String desc, String sig, String[] exc) {
+					if (mname =~ rx) println "DIAG_M $name :: $mname $desc"
+					return null
+				}
+			}, org.objectweb.asm.ClassReader.SKIP_CODE | org.objectweb.asm.ClassReader.SKIP_DEBUG)
+		}
+		["net/minecraft/world/entity/player/Player.class": ~/containerMenu|inventoryMenu/].each { name, rx ->
+			def ent = zip.getEntry(name)
+			if (ent == null) { println "DIAG_NOFILE $name"; return }
+			new org.objectweb.asm.ClassReader(zip.getInputStream(ent)).accept(new org.objectweb.asm.ClassVisitor(api) {
+				@Override org.objectweb.asm.FieldVisitor visitField(int acc, String fname, String desc, String sig, Object val) {
+					if (fname =~ rx) println "DIAG_F $name :: $fname $desc"
+					return null
+				}
+			}, org.objectweb.asm.ClassReader.SKIP_CODE | org.objectweb.asm.ClassReader.SKIP_DEBUG)
 		}
 	}
 }
