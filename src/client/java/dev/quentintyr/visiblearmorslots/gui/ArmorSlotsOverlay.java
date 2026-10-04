@@ -268,14 +268,14 @@ public class ArmorSlotsOverlay {
         // Check armor slots
         for (ArmorSlotWidget slot : armorSlots) {
             if (slot.isMouseOver((int) mouseX, (int) mouseY)) {
-                handleSlotClick(slot.getSlotType(), isShiftPressed, isCtrlPressed);
+                handleSlotClick(slot.getSlotType(), button, isShiftPressed, isCtrlPressed);
                 return true;
             }
         }
 
         // Check offhand slot
         if (offhandSlot != null && offhandSlot.isMouseOver((int) mouseX, (int) mouseY)) {
-            handleSlotClick(SlotInfo.SlotType.OFFHAND, isShiftPressed, isCtrlPressed);
+            handleSlotClick(SlotInfo.SlotType.OFFHAND, button, isShiftPressed, isCtrlPressed);
             return true;
         }
 
@@ -287,17 +287,17 @@ public class ArmorSlotsOverlay {
         return false;
     }
 
-    private void handleSlotClick(SlotInfo.SlotType slotType, boolean isShiftPressed, boolean isCtrlPressed) {
+    private void handleSlotClick(SlotInfo.SlotType slotType, int button, boolean isShiftPressed, boolean isCtrlPressed) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.gui.screen() == null)
             return;
 
         ActionType actionType = isShiftPressed ? ActionType.QUICK_TRANSFER : ActionType.MOUSE_SWAP;
-        sendSlotAction(actionType, slotType.getEquipmentSlot(), -1, isShiftPressed, isCtrlPressed);
+        sendSlotAction(actionType, slotType.getEquipmentSlot(), -1, isShiftPressed, isCtrlPressed, button);
     }
 
     private void sendSlotAction(ActionType actionType, EquipmentSlot targetSlot,
-            int hotbarSlot, boolean isShiftPressed, boolean isCtrlPressed) {
+            int hotbarSlot, boolean isShiftPressed, boolean isCtrlPressed, int button) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) {
             dev.quentintyr.visiblearmorslots.Visiblearmorslots.LOGGER.warn("Cannot send slot action - player is null");
@@ -308,7 +308,7 @@ public class ArmorSlotsOverlay {
 
         SlotActionPayload payload = new SlotActionPayload(
                 actionType, targetSlot, hotbarSlot,
-                isShiftPressed, isCtrlPressed, isCreative);
+                isShiftPressed, isCtrlPressed, isCreative, button);
 
         try {
             ClientPlayNetworking.send(payload);
@@ -328,14 +328,14 @@ public class ArmorSlotsOverlay {
             // Check which slot the mouse is over (tracked from render)
             for (ArmorSlotWidget slot : armorSlots) {
                 if (slot.isMouseOver((int) lastMouseX, (int) lastMouseY)) {
-                    sendSlotAction(ActionType.DROP, slot.getSlotType().getEquipmentSlot(), -1, false, false);
+                    sendSlotAction(ActionType.DROP, slot.getSlotType().getEquipmentSlot(), -1, false, false, -1);
                     return true;
                 }
             }
 
             // Check offhand slot
             if (offhandSlot != null && offhandSlot.isMouseOver((int) lastMouseX, (int) lastMouseY)) {
-                sendSlotAction(ActionType.DROP, SlotInfo.SlotType.OFFHAND.getEquipmentSlot(), -1, false, false);
+                sendSlotAction(ActionType.DROP, SlotInfo.SlotType.OFFHAND.getEquipmentSlot(), -1, false, false, -1);
                 return true;
             }
         }
@@ -348,7 +348,7 @@ public class ArmorSlotsOverlay {
             for (ArmorSlotWidget slot : armorSlots) {
                 if (slot.isMouseOver((int) lastMouseX, (int) lastMouseY)) {
                     sendSlotAction(ActionType.HOTBAR_SWAP, slot.getSlotType().getEquipmentSlot(), hotbarSlot, false,
-                            false);
+                            false, -1);
                     return true;
                 }
             }
@@ -356,7 +356,7 @@ public class ArmorSlotsOverlay {
             // Check offhand slot
             if (offhandSlot != null && offhandSlot.isMouseOver((int) lastMouseX, (int) lastMouseY)) {
                 sendSlotAction(ActionType.HOTBAR_SWAP, SlotInfo.SlotType.OFFHAND.getEquipmentSlot(), hotbarSlot, false,
-                        false);
+                        false, -1);
                 return true;
             }
         }

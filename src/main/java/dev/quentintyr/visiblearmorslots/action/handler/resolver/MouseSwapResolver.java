@@ -34,7 +34,7 @@ public class MouseSwapResolver {
         }
 
         // Perform the swap (same logic for both creative and survival)
-        performSwap(player, targetSlot, currentEquipped, cursorStack);
+        performSwap(player, targetSlot, currentEquipped, cursorStack, action.mouseButton());
     }
 
     private static boolean canEquipInSlot(ItemStack stack, EquipmentSlot slot) {
@@ -53,12 +53,48 @@ public class MouseSwapResolver {
     }
 
     private static void performSwap(ServerPlayer player, EquipmentSlot slot,
-            ItemStack equipped, ItemStack cursor) {
+            ItemStack equipped, ItemStack cursor, int button) {
+        if (button == 1) {
+            performRightClick(player, slot, equipped.copy(), cursor.copy());
+            return;
+        }
         // Equip the new item (or clear the slot if cursor is empty)
         player.setItemSlot(slot, cursor.copy());
 
         // Put the previously equipped item on the cursor
         player.containerMenu.setCarried(equipped.copy());
+
+        // Force inventory sync to client
+        InventoryUtil.syncInventoryFull(player);
+    }
+
+    /**
+     * Vanilla right-click semantics: empty cursor picks up half (rounded up),
+     * otherwise place a single item when the slot is empty or mergeable,
+     * full swap for mismatched items.
+     */
+    private static void performRightClick(ServerPlayer player, EquipmentSlot slot,
+            ItemStack equipped, ItemStack cursor) {
+        if (cursor.isEmpty()) {
+            int take = (equipped.getCount() + 1) / 2;
+            ItemStack taken = equipped.split(take);
+            player.setItemSlot(slot, equipped);
+            player.containerMenu.setCarried(taken);
+        } else if (equipped.isEmpty()
+                || (ItemStack.isSameItemSameComponents(equipped, cursor)
+                    && equipped.getCount() < equipped.getMaxStackSize())) {
+            ItemStack one = cursor.split(1);
+            if (equipped.isEmpty()) {
+                player.setItemSlot(slot, one);
+            } else {
+                equipped.grow(1);
+                player.setItemSlot(slot, equipped);
+            }
+            player.containerMenu.setCarried(cursor);
+        } else {
+            player.setItemSlot(slot, cursor);
+            player.containerMenu.setCarried(equipped);
+        }
 
         // Force inventory sync to client
         InventoryUtil.syncInventoryFull(player);

@@ -15,7 +15,8 @@ public record SlotActionPayload(ActionType actionType,
         int hotbarSlot,
         boolean isShiftPressed,
         boolean isCtrlPressed,
-        boolean isCreativeMode) implements CustomPacketPayload {
+        boolean isCreativeMode,
+        int mouseButton) implements CustomPacketPayload {
 
     public static final CustomPacketPayload.Type<SlotActionPayload> ID = new CustomPacketPayload.Type<>(
             Identifier.fromNamespaceAndPath("visiblearmorslots", "slot_action"));
@@ -34,6 +35,7 @@ public record SlotActionPayload(ActionType actionType,
             buf.writeBoolean(payload.isShiftPressed());
             buf.writeBoolean(payload.isCtrlPressed());
             buf.writeBoolean(payload.isCreativeMode());
+            buf.writeVarInt(payload.mouseButton());
         }
 
         @Override
@@ -47,8 +49,9 @@ public record SlotActionPayload(ActionType actionType,
             boolean isShiftPressed = buf.readBoolean();
             boolean isCtrlPressed = buf.readBoolean();
             boolean isCreativeMode = buf.readBoolean();
+            int mouseButton = buf.readVarInt();
             return new SlotActionPayload(actionType, targetSlot, hotbarSlot, isShiftPressed, isCtrlPressed,
-                    isCreativeMode);
+                    isCreativeMode, mouseButton);
         }
     };
 
