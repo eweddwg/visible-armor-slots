@@ -6,7 +6,6 @@ import dev.quentintyr.visiblearmorslots.gui.widget.ArmorSlotWidget;
 import dev.quentintyr.visiblearmorslots.gui.widget.OffhandSlotWidget;
 import dev.quentintyr.visiblearmorslots.mixin.client.HandledScreenAccessor;
 import dev.quentintyr.visiblearmorslots.network.SlotActionPayload;
-import dev.quentintyr.visiblearmorslots.util.KeyCodes;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -325,30 +324,34 @@ public class ArmorSlotsOverlay {
         }
     }
 
-    public boolean keyPressed(int keyCode, boolean isShiftPressed, boolean isCtrlPressed) {
+    public boolean keyPressed(net.minecraft.client.input.KeyEvent event) {
         if (!visible)
             return false;
 
-        // Handle Q key for dropping armor
-        if (keyCode == KeyCodes.KEY_Q) {
+        Minecraft mc = Minecraft.getInstance();
+
+        // Handle drop key for dropping armor (follows vanilla rebinding).
+        if (mc.options.keyDrop.matches(event)) {
             // Check which slot the mouse is over (tracked from render)
             for (ArmorSlotWidget slot : armorSlots) {
                 if (slot.isMouseOver((int) lastMouseX, (int) lastMouseY)) {
-                    sendSlotAction(ActionType.DROP, slot.getSlotType().getEquipmentSlot(), -1, false, isCtrlPressed, -1);
+                    sendSlotAction(ActionType.DROP, slot.getSlotType().getEquipmentSlot(), -1, false, event.hasControlDown(), -1);
                     return true;
                 }
             }
 
             // Check offhand slot
             if (offhandSlot != null && offhandSlot.isMouseOver((int) lastMouseX, (int) lastMouseY)) {
-                sendSlotAction(ActionType.DROP, SlotInfo.SlotType.OFFHAND.getEquipmentSlot(), -1, false, isCtrlPressed, -1);
+                sendSlotAction(ActionType.DROP, SlotInfo.SlotType.OFFHAND.getEquipmentSlot(), -1, false, event.hasControlDown(), -1);
                 return true;
             }
         }
 
-        // Handle hotbar swapping (keys 1-9)
-        if (keyCode >= KeyCodes.KEY_1 && keyCode <= KeyCodes.KEY_9) {
-            int hotbarSlot = keyCode - KeyCodes.KEY_1;
+        // Handle hotbar swapping (follows vanilla rebinding).
+        for (int hotbarSlot = 0; hotbarSlot < 9; hotbarSlot++) {
+            if (!mc.options.keyHotbarSlots[hotbarSlot].matches(event)) {
+                continue;
+            }
 
             // Check which armor slot the mouse is over
             for (ArmorSlotWidget slot : armorSlots) {
