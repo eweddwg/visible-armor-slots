@@ -17,6 +17,11 @@ public class HotbarSwapResolver {
         if (player == null || player.getInventory() == null) {
             return;
         }
+
+        // Vanilla parity: number-key swap requires an empty cursor.
+        if (!player.containerMenu.getCarried().isEmpty()) {
+            return;
+        }
         
         EquipmentSlot targetSlot = action.targetSlot();
         if (targetSlot == null)

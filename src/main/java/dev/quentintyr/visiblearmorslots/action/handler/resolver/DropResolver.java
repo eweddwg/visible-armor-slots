@@ -16,6 +16,11 @@ public class DropResolver {
         if (player == null) {
             return;
         }
+
+        // Vanilla parity: throw works only with an empty cursor.
+        if (!player.containerMenu.getCarried().isEmpty()) {
+            return;
+        }
         
         EquipmentSlot targetSlot = action.targetSlot();
         if (targetSlot == null)
