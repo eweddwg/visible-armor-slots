@@ -83,7 +83,7 @@ public class ContainerListWidget extends ContainerObjectSelectionList<ContainerL
         }
 
         @Override
-        protected void updateNarration(net.minecraft.client.gui.narration.NarrationElementOutput output) {
+        public void updateNarration(net.minecraft.client.gui.narration.NarrationElementOutput output) {
             output.add(net.minecraft.client.gui.narration.NarratedElementType.TITLE, title);
         }
 
@@ -163,7 +163,7 @@ public class ContainerListWidget extends ContainerObjectSelectionList<ContainerL
         }
 
         @Override
-        protected void updateNarration(net.minecraft.client.gui.narration.NarrationElementOutput output) {
+        public void updateNarration(net.minecraft.client.gui.narration.NarrationElementOutput output) {
             output.add(net.minecraft.client.gui.narration.NarratedElementType.TITLE,
                     Component.literal(title + " (" + (enabled ? "enabled" : "disabled") + ")"));
         }
