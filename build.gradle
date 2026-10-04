@@ -110,8 +110,11 @@ tasks.register("diagnoseMc") {
 			def hit = findClass(simple)
 			if (hit == null) { println "DIAG_NOFILE $simple"; return }
 			def zip = new java.util.zip.ZipFile(hit[0])
-			def cr = new org.objectweb.asm.ClassReader(zip.getInputStream(zip.getEntry(hit[1])))
-			println "DIAG_SIG $simple :: super=${cr.getSuperName()} signature=${cr.getSignature()}"
+			new org.objectweb.asm.ClassReader(zip.getInputStream(zip.getEntry(hit[1]))).accept(new org.objectweb.asm.ClassVisitor(org.objectweb.asm.Opcodes.ASM9) {
+				@Override void visit(int v, int acc, String name, String sig, String superName, String[] ifaces) {
+					println "DIAG_SIG $simple :: super=$superName signature=$sig ifaces=${ifaces?.join(',')}"
+				}
+			}, org.objectweb.asm.ClassReader.SKIP_CODE | org.objectweb.asm.ClassReader.SKIP_DEBUG)
 			zip.close()
 		}
 		def hit = findClass("MouseButtonEvent")
