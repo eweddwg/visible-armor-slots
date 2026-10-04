@@ -123,10 +123,9 @@ tasks.register("diagnoseMc") {
 			}, org.objectweb.asm.ClassReader.SKIP_CODE | org.objectweb.asm.ClassReader.SKIP_DEBUG)
 			zip.close()
 		}
-		fullDump("ObjectSelectionList")
+		fullDump("ContainerObjectSelectionList")
+		fullDump("AbstractSelectionList")
 		fullDump("ObjectSelectionList\$Entry")
-		fullDump("AbstractSliderButton")
-		fullDump("Minecraft")
 	}
 }
 publishing {
