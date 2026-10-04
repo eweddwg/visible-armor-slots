@@ -28,7 +28,6 @@ public class ModConfig {
     private int marginY = 0;
     private boolean enabled = true;
     private boolean showTooltips = true;
-    private boolean autoPositioning = true;
     private boolean showOffhandSlot = true; 
     private boolean darkMode = false; 
     private Set<String> allowedContainers = new HashSet<>();
@@ -78,10 +77,6 @@ public class ModConfig {
         return showTooltips;
     }
 
-    public boolean isAutoPositioning() {
-        return autoPositioning;
-    }
-
     public boolean isShowOffhandSlot() {
         return showOffhandSlot;
     }
@@ -116,10 +111,6 @@ public class ModConfig {
 
     public void setDarkMode(boolean darkMode) {
         this.darkMode = darkMode;
-    }
-
-    public void setAutoPositioning(boolean autoPositioning) {
-        this.autoPositioning = autoPositioning;
     }
 
     public void setShowOffhandSlot(boolean showOffhandSlot) {
@@ -201,8 +192,6 @@ public class ModConfig {
                 cfg.showTooltips = root.get("showTooltips").getAsBoolean();
             if (root.has("darkMode"))
                 cfg.darkMode = root.get("darkMode").getAsBoolean();
-            if (root.has("autoPositioning"))
-                cfg.autoPositioning = root.get("autoPositioning").getAsBoolean();
             if (root.has("positioning")) {
                 try {
                     cfg.positioning = Side.valueOf(root.get("positioning").getAsString().toUpperCase());
@@ -242,7 +231,6 @@ public class ModConfig {
         root.addProperty("positioning", cfg.positioning.name());
         root.addProperty("marginX", cfg.marginX);
         root.addProperty("marginY", cfg.marginY);
-        root.addProperty("autoPositioning", cfg.autoPositioning);
         root.addProperty("showOffhandSlot", cfg.showOffhandSlot);
         root.addProperty("darkMode", cfg.darkMode);
         

@@ -17,7 +17,6 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
@@ -106,20 +105,11 @@ public class ArmorSlotsOverlay {
 
         ModConfig config = ModConfig.getInstance();
 
-        // Start from the chosen side, then apply margins and any auto offset
+        // Start from the chosen side, then apply margins
         if (config.getPositioning() == ModConfig.Side.RIGHT) {
             baseX = screenLeft + accessor.getImageWidth() + config.getMarginX();
         } else {
             baseX = screenLeft - 28 - config.getMarginX();
-
-            // Optional extra shift to avoid potion effects overlay (left side only)
-            if (config.isAutoPositioning()) {
-                Minecraft mc = Minecraft.getInstance();
-                Player player = mc.player;
-                if (player != null && player.hasEffect(MobEffects.REGENERATION)) {
-                    baseX -= 24; // shift further left
-                }
-            }
         }
 
         // Bottom-align the column regardless of whether the offhand slot is shown.

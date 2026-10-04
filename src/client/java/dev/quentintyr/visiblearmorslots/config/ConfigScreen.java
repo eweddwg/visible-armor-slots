@@ -99,12 +99,6 @@ public class ConfigScreen extends Screen {
                         (b, v) -> config.setDarkMode(v)));
         y += step;
 
-        addRenderableWidget(CycleButton.onOffBuilder(config.isAutoPositioning())
-                .create(x, y, w, h,
-                        Component.translatable("config.visiblearmorslots.autoPosition"),
-                        (b, v) -> config.setAutoPositioning(v)));
-        y += step;
-
         addRenderableWidget(CycleButton.<ModConfig.Side>builder(
                         s -> Component.literal(s.toString()),
                         () -> config.getPositioning())

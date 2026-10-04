@@ -14,7 +14,5 @@
     "config.visiblearmorslots.enabled": "Etkin",
     "config.visiblearmorslots.enabled.tooltip": "Görünür zırh yuvaları katmanını etkinleştir veya devre dışı bırak",
     "config.visiblearmorslots.show_tooltips": "İpucu Göster",
-    "config.visiblearmorslots.show_tooltips.tooltip": "Zırh yuvalarının üzerine geldiğinizde öğe ipuçlarını göster",
-    "config.visiblearmorslots.auto_positioning": "Otomatik Konumlandırma",
-    "config.visiblearmorslots.auto_positioning.tooltip": "Puan etkileri görünürken otomatik yeniden konumlandır"
+    "config.visiblearmorslots.show_tooltips.tooltip": "Zırh yuvalarının üzerine geldiğinizde öğe ipuçlarını göster"
 }
