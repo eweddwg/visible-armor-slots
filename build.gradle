@@ -128,6 +128,7 @@ tasks.register("diagnoseMc") {
 		fullDump("AbstractSliderButton")
 		fullDump("Minecraft")
 	}
+}
 publishing {
 	publications {
 		create("mavenJava", MavenPublication) {
