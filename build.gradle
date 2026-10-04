@@ -87,7 +87,53 @@ jar {
 	}
 }
 
-// configure the maven publication
+// TEMP-DIAGNOSTIC (scratch, will be reverted): generics bounds + mouse accessors
+tasks.register("diagnoseMc") {
+	doLast {
+		def base = new File(projectDir, ".gradle/loom-cache")
+		def jars = []
+		base.eachFileRecurse { f -> if (f.name.endsWith(".jar") && f.path.contains("minecraft")) jars.add(f) }
+		def findClass = { String simple ->
+			for (j in jars) {
+				def zip = new java.util.zip.ZipFile(j)
+				try {
+					def en = zip.entries()
+					while (en.hasMoreElements()) {
+						def n = en.nextElement().name
+						if (n.endsWith("/" + simple + ".class") || n == simple + ".class") return [j, n]
+					}
+				} finally { zip.close() }
+			}
+			return null
+		}
+		["ContainerObjectSelectionList", "ObjectSelectionList\$Entry", "AbstractSelectionList\$Entry"].each { simple ->
+			def hit = findClass(simple)
+			if (hit == null) { println "DIAG_NOFILE $simple"; return }
+			def zip = new java.util.zip.ZipFile(hit[0])
+			def cr = new org.objectweb.asm.ClassReader(zip.getInputStream(zip.getEntry(hit[1])))
+			println "DIAG_SIG $simple :: super=${cr.getSuperName()} signature=${cr.getSignature()}"
+			zip.close()
+		}
+		def hit = findClass("MouseButtonEvent")
+		def zip = new java.util.zip.ZipFile(hit[0])
+		new org.objectweb.asm.ClassReader(zip.getInputStream(zip.getEntry(hit[1]))).accept(new org.objectweb.asm.ClassVisitor(org.objectweb.asm.Opcodes.ASM9) {
+			@Override org.objectweb.asm.MethodVisitor visitMethod(int acc, String mname, String desc, String sig, String[] exc) {
+				if (!mname.startsWith('lambda$') && mname != '<clinit>') println "DIAG_M MouseButtonEvent :: $mname $desc"
+				return null
+			}
+		}, org.objectweb.asm.ClassReader.SKIP_CODE | org.objectweb.asm.ClassReader.SKIP_DEBUG)
+		zip.close()
+		def hit2 = findClass("Identifier")
+		def zip2 = new java.util.zip.ZipFile(hit2[0])
+		new org.objectweb.asm.ClassReader(zip2.getInputStream(zip2.getEntry(hit2[1]))).accept(new org.objectweb.asm.ClassVisitor(org.objectweb.asm.Opcodes.ASM9) {
+			@Override org.objectweb.asm.MethodVisitor visitMethod(int acc, String mname, String desc, String sig, String[] exc) {
+				if (mname == 'parse' || mname == 'tryParse' || mname == 'of' || mname == 'fromNamespaceAndPath') println "DIAG_M Identifier :: $mname $desc"
+				return null
+			}
+		}, org.objectweb.asm.ClassReader.SKIP_CODE | org.objectweb.asm.ClassReader.SKIP_DEBUG)
+		zip2.close()
+	}
+}
 publishing {
 	publications {
 		create("mavenJava", MavenPublication) {
