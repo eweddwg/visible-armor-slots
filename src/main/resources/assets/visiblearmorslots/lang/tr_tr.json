@@ -5,14 +5,5 @@
     "gui.visiblearmorslots.empty.boots": "Boş Bot Yuvası",
     "gui.visiblearmorslots.empty.offhand": "Boş Yan El Yuvası",
     "config.visiblearmorslots.title": "Görünür Zırh Yuvaları Ayarları",
-    "config.visiblearmorslots.positioning": "Konum",
-    "config.visiblearmorslots.positioning.tooltip": "Zırh yuvalarının ekranın hangi tarafında gösterileceği",
-    "config.visiblearmorslots.margin_x": "Yatay Kenar Boşluğu",
-    "config.visiblearmorslots.margin_x.tooltip": "Konteyner kenarından uzaklık, sadece dışa doğru",
-    "config.visiblearmorslots.margin_y": "Dikey Kenar Boşluğu",
-    "config.visiblearmorslots.margin_y.tooltip": "Varsayılan konumdan dikey kayma, ekrana sığdırılır",
-    "config.visiblearmorslots.enabled": "Etkin",
-    "config.visiblearmorslots.enabled.tooltip": "Görünür zırh yuvaları katmanını etkinleştir veya devre dışı bırak",
-    "config.visiblearmorslots.show_tooltips": "İpucu Göster",
-    "config.visiblearmorslots.show_tooltips.tooltip": "Zırh yuvalarının üzerine geldiğinizde öğe ipuçlarını göster"
+    "config.visiblearmorslots.enabled": "Etkin"
 }
