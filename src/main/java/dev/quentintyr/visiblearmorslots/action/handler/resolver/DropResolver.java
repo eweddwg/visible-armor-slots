@@ -21,17 +21,17 @@ public class DropResolver {
         if (targetSlot == null)
             return;
 
-        ItemStack equipped = player.getItemBySlot(targetSlot);
+        ItemStack equipped = player.getItemBySlot(targetSlot).copy();
         if (equipped.isEmpty())
             return;
 
-        // Drop the equipped item into the world. SERVER_ONLY: our client does not
-        // predict this action, so the server must play the swing animation itself
-        // (PREDICTED would skip it, used when the client already animated locally).
-        player.drop(equipped, false, Prediction.SERVER_ONLY);
+        // Vanilla parity: Q drops one item, Ctrl+Q drops the whole stack.
+        int drop = action.isCtrlPressed() ? equipped.getCount() : 1;
+        ItemStack taken = equipped.split(drop);
+        player.setItemSlot(targetSlot, equipped);
 
-        // Clear the equipment slot
-        player.setItemSlot(targetSlot, ItemStack.EMPTY);
+        // Drop the taken items into the world
+        player.drop(taken, false, Prediction.SERVER_ONLY);
 
         // Force inventory sync to client
         InventoryUtil.syncInventory(player);

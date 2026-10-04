@@ -328,14 +328,14 @@ public class ArmorSlotsOverlay {
             // Check which slot the mouse is over (tracked from render)
             for (ArmorSlotWidget slot : armorSlots) {
                 if (slot.isMouseOver((int) lastMouseX, (int) lastMouseY)) {
-                    sendSlotAction(ActionType.DROP, slot.getSlotType().getEquipmentSlot(), -1, false, false, -1);
+                    sendSlotAction(ActionType.DROP, slot.getSlotType().getEquipmentSlot(), -1, false, isCtrlPressed, -1);
                     return true;
                 }
             }
 
             // Check offhand slot
             if (offhandSlot != null && offhandSlot.isMouseOver((int) lastMouseX, (int) lastMouseY)) {
-                sendSlotAction(ActionType.DROP, SlotInfo.SlotType.OFFHAND.getEquipmentSlot(), -1, false, false, -1);
+                sendSlotAction(ActionType.DROP, SlotInfo.SlotType.OFFHAND.getEquipmentSlot(), -1, false, isCtrlPressed, -1);
                 return true;
             }
         }
