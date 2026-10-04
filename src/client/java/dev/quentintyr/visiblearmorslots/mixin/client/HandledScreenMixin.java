@@ -2,9 +2,11 @@ package dev.quentintyr.visiblearmorslots.mixin.client;
 
 import dev.quentintyr.visiblearmorslots.VisiblearmorslotsClient;
 import dev.quentintyr.visiblearmorslots.gui.ArmorSlotsOverlay;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -39,8 +41,8 @@ public class HandledScreenMixin {
         return false;
     }
 
-    @Inject(method = "render(Lnet/minecraft/client/gui/GuiGraphics;IIF)V", at = @At("RETURN"))
-    private void onRender(GuiGraphics context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+    @Inject(method = "extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIF)V", at = @At("RETURN"))
+    private void onExtract(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         if ((Object) this instanceof InventoryScreen) {
             return;
         }
@@ -62,13 +64,13 @@ public class HandledScreenMixin {
 
         ArmorSlotsOverlay overlay = VisiblearmorslotsClient.getArmorSlotsOverlay();
         if (overlay != null && overlay.isVisible()) {
-            overlay.render(context, mouseX, mouseY, delta);
-            overlay.renderTooltips(context, mouseX, mouseY);
+            overlay.render(graphics, mouseX, mouseY, delta);
+            overlay.renderTooltips(graphics, mouseX, mouseY);
         }
     }
 
-    @Inject(method = "mouseClicked(DDI)Z", at = @At("HEAD"), cancellable = true)
-    private void onMouseClicked(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
+    @Inject(method = "mouseClicked(Lnet/minecraft/client/input/MouseButtonEvent;Z)Z", at = @At("HEAD"), cancellable = true)
+    private void onMouseClicked(MouseButtonEvent event, boolean doubleClick, CallbackInfoReturnable<Boolean> cir) {
         if ((Object) this instanceof InventoryScreen) {
             return;
         }
@@ -79,14 +81,14 @@ public class HandledScreenMixin {
         }
 
         ArmorSlotsOverlay overlay = VisiblearmorslotsClient.getArmorSlotsOverlay();
-        if (overlay != null && overlay.mouseClicked(mouseX, mouseY, button)) {
+        if (overlay != null && overlay.mouseClicked(event.x, event.y, event.buttonInfo().button(), event.buttonInfo().modifiers())) {
             cir.setReturnValue(true);
             cir.cancel();
         }
     }
 
-    @Inject(method = "mouseReleased(DDI)Z", at = @At("HEAD"), cancellable = true)
-    private void onMouseReleased(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
+    @Inject(method = "mouseReleased(Lnet/minecraft/client/input/MouseButtonEvent;)Z", at = @At("HEAD"), cancellable = true)
+    private void onMouseReleased(MouseButtonEvent event, CallbackInfoReturnable<Boolean> cir) {
         if ((Object) this instanceof InventoryScreen) {
             return;
         }
@@ -98,16 +100,16 @@ public class HandledScreenMixin {
         ArmorSlotsOverlay overlay = VisiblearmorslotsClient.getArmorSlotsOverlay();
         if (overlay != null && overlay.isVisible()) {
             // Block mouse release events over overlay to prevent drops
-            if (mouseX >= overlay.getBaseX() && mouseX < overlay.getBaseX() + 24 &&
-                    mouseY >= overlay.getBaseY() && mouseY < overlay.getBaseY() + overlay.getColumnHeight()) {
+            if (event.x >= overlay.getBaseX() && event.x < overlay.getBaseX() + 24 &&
+                    event.y >= overlay.getBaseY() && event.y < overlay.getBaseY() + overlay.getColumnHeight()) {
                 cir.setReturnValue(true);
                 cir.cancel();
             }
         }
     }
 
-    @Inject(method = "keyPressed(III)Z", at = @At("HEAD"), cancellable = true)
-    private void onKeyPressed(int keyCode, int scanCode, int modifiers, CallbackInfoReturnable<Boolean> cir) {
+    @Inject(method = "keyPressed(Lnet/minecraft/client/input/KeyEvent;)Z", at = @At("HEAD"), cancellable = true)
+    private void onKeyPressed(KeyEvent event, CallbackInfoReturnable<Boolean> cir) {
         if ((Object) this instanceof InventoryScreen) {
             return;
         }
@@ -117,7 +119,7 @@ public class HandledScreenMixin {
         }
 
         ArmorSlotsOverlay overlay = VisiblearmorslotsClient.getArmorSlotsOverlay();
-        if (overlay != null && overlay.keyPressed(keyCode, scanCode, modifiers)) {
+        if (overlay != null && overlay.keyPressed(event.key(), event.keycode(), event.modifiers())) {
             cir.setReturnValue(true);
         }
     }

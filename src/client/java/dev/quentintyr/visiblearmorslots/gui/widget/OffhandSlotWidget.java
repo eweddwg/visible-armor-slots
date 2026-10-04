@@ -2,7 +2,7 @@ package dev.quentintyr.visiblearmorslots.gui.widget;
 
 import dev.quentintyr.visiblearmorslots.gui.SlotInfo;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
@@ -22,14 +22,14 @@ public class OffhandSlotWidget {
         this.y = y;
     }
 
-    public void render(GuiGraphics context, ItemStack stack, int mouseX, int mouseY) {
+    public void render(GuiGraphicsExtractor context, ItemStack stack, int mouseX, int mouseY) {
         if (stack.isEmpty()) {
             // Draw shield icon for empty off-hand slot
             context.blit(RenderPipelines.GUI_TEXTURED, EMPTY_OFFHAND_SLOT, x, y, 0, 0, 16, 16, 16, 16);
         } else {
             // Draw item with count
-            context.renderItem(stack, x, y);
-            context.renderItemDecorations(Minecraft.getInstance().font, stack, x, y);
+            context.fakeItem(stack, x, y);
+            context.itemDecorations(Minecraft.getInstance().font, stack, x, y);
         }
     }
 

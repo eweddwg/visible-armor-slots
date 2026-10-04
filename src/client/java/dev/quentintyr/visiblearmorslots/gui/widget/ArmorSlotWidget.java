@@ -2,7 +2,7 @@ package dev.quentintyr.visiblearmorslots.gui.widget;
 
 import dev.quentintyr.visiblearmorslots.gui.SlotInfo;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.Identifier;
@@ -34,15 +34,15 @@ public class ArmorSlotWidget {
         this.y = y;
     }
 
-    public void render(GuiGraphics context, ItemStack stack, int mouseX, int mouseY) {
+    public void render(GuiGraphicsExtractor context, ItemStack stack, int mouseX, int mouseY) {
         if (stack.isEmpty()) {
             // Draw empty slot texture
             Identifier emptyTexture = getEmptySlotTexture();
             context.blit(RenderPipelines.GUI_TEXTURED, emptyTexture, x, y, 0, 0, 16, 16, 16, 16);
         } else {
             // Draw item with count (always 1 for armor)
-            context.renderItem(stack, x, y);
-            context.renderItemDecorations(Minecraft.getInstance().font, stack, x, y);
+            context.fakeItem(stack, x, y);
+            context.itemDecorations(Minecraft.getInstance().font, stack, x, y);
         }
     }
 

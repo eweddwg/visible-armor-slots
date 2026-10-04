@@ -1,10 +1,10 @@
 package dev.quentintyr.visiblearmorslots.config;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.ObjectSelectionList;
-import net.minecraft.client.gui.components.ObjectSelectionList.Entry;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -15,10 +15,10 @@ import java.util.List;
 import dev.quentintyr.visiblearmorslots.config.ModConfig;
 
 
-public class ContainerListWidget extends ObjectSelectionList<ContainerListWidget.BaseEntry> {
+public class ContainerListWidget extends ContainerObjectSelectionList<ContainerListWidget.BaseEntry> {
 
     // Base entry class to satisfy generic type bounds
-    public abstract static class BaseEntry extends Entry<BaseEntry> {}
+    public abstract static class BaseEntry extends ObjectSelectionList.Entry<BaseEntry> {}
 
     private final ModConfig config;
 
@@ -64,23 +64,17 @@ public class ContainerListWidget extends ObjectSelectionList<ContainerListWidget
         return Math.min(400, width - 50);
     }
 
-    @Override
-    protected int getScrollbarPosition() {
-        return getRight() - 6;
-    }
-
     private class SectionTitleEntry extends BaseEntry {
         private final Component title;
         public SectionTitleEntry(Component title) { this.title = title; }
 
         @Override
-        public void render(GuiGraphics ctx, int index, int y, int x, int w, int h,
-                           int mx, int my, boolean hovered, float tickDelta) {
-            ctx.drawCenteredString(minecraft.font, title, x + w / 2, y + (h - 8)/2, 0xFFFFFF);
+        public void extractContent(GuiGraphicsExtractor graphics, int index, int y, boolean hovered, float tickDelta) {
+            graphics.centeredText(minecraft.font, title, getX() + getWidth() / 2, y + (getHeight() - 8) / 2, 0xFFFFFF);
         }
 
         @Override
-        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
             return false; // not clickable
         }
 
@@ -94,7 +88,7 @@ public class ContainerListWidget extends ObjectSelectionList<ContainerListWidget
         private final Identifier id;
         private boolean enabled;
         private final String title;
-        
+
         private int lastToggleX, lastToggleY, lastToggleWidth, lastToggleHeight;
 
         public ContainerEntry(Identifier id, String title, List<String> sources) {
@@ -104,32 +98,34 @@ public class ContainerListWidget extends ObjectSelectionList<ContainerListWidget
         }
 
         @Override
-        public void render(GuiGraphics ctx, int index, int y, int x, int w, int h,
-                           int mx, int my, boolean hovered, float tickDelta) {
+        public void extractContent(GuiGraphicsExtractor graphics, int index, int y, boolean hovered, float tickDelta) {
+            int x = getX();
+            int w = getWidth();
+            int h = getHeight();
 
             // Toggle switch dimensions
             int toggleWidth = 32;
             int toggleHeight = 14;
             int toggleX = x + 5;
             int toggleY = y + (h - toggleHeight) / 2;
-            
+
             // Store for click detection
             lastToggleX = toggleX;
             lastToggleY = toggleY;
             lastToggleWidth = toggleWidth;
             lastToggleHeight = toggleHeight;
-            
+
             // Draw toggle background
             int bgColor = enabled ? 0xFF00AA00 : 0xFF555555;
-            ctx.fill(toggleX, toggleY, toggleX + toggleWidth, toggleY + toggleHeight, bgColor);
-            
+            graphics.fill(toggleX, toggleY, toggleX + toggleWidth, toggleY + toggleHeight, bgColor);
+
             // Draw toggle knob
             int knobSize = 10;
             int knobY = toggleY + 2;
             int knobX = enabled ? toggleX + toggleWidth - knobSize - 2 : toggleX + 2;
-            ctx.fill(knobX, knobY, knobX + knobSize, knobY + knobSize, 0xFFFFFFFF);
+            graphics.fill(knobX, knobY, knobX + knobSize, knobY + knobSize, 0xFFFFFFFF);
 
-            ctx.drawString(minecraft.font, title, x + 45, y + (h - 8)/2, enabled ? 0xFFFFFF : 0x888888, false);
+            graphics.text(minecraft.font, title, x + 45, y + (h - 8) / 2, enabled ? 0xFFFFFF : 0x888888, false);
         }
 
         private void toggle() {
@@ -143,9 +139,9 @@ public class ContainerListWidget extends ObjectSelectionList<ContainerListWidget
         }
 
         @Override
-        public boolean mouseClicked(double mx, double my, int button) {
-            if (mx >= lastToggleX && mx < lastToggleX + lastToggleWidth && 
-                my >= lastToggleY && my < lastToggleY + lastToggleHeight) {
+        public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+            if (event.x >= lastToggleX && event.x < lastToggleX + lastToggleWidth &&
+                event.y >= lastToggleY && event.y < lastToggleY + lastToggleHeight) {
                 toggle();
                 return true;
             }
@@ -167,7 +163,7 @@ public class ContainerListWidget extends ObjectSelectionList<ContainerListWidget
         }
         return sb.toString();
     }
-    
+
     private static String formatModdedTitle(Identifier id) {
         String modName = formatPath(id.getNamespace());
         String containerName = formatPath(id.getPath());
