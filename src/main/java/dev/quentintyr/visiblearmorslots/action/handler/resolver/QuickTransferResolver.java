@@ -41,8 +41,8 @@ public class QuickTransferResolver {
                 player.getInventory().setItem(i, stack.copy());
                 return true;
             } else if (slotStack.getItem() == stack.getItem()
-                    && slotStack.getCount() < slotStack.getItem().getDefaultMaxStackSize()) {
-                int remaining = slotStack.getItem().getDefaultMaxStackSize() - slotStack.getCount();
+                    && slotStack.getCount() < slotStack.getMaxStackSize()) {
+                int remaining = slotStack.getMaxStackSize() - slotStack.getCount();
                 if (remaining >= stack.getCount()) {
                     slotStack.grow(stack.getCount());
                     return true;
