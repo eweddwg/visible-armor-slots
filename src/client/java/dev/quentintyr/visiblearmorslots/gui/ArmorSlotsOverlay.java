@@ -261,9 +261,15 @@ public class ArmorSlotsOverlay {
         }
     }
 
-    public boolean mouseClicked(double mouseX, double mouseY, int button, boolean isShiftPressed, boolean isCtrlPressed) {
+    public boolean mouseClicked(double mouseX, double mouseY, int button, boolean isShiftPressed, boolean isCtrlPressed, boolean doubleClick) {
         if (!visible)
             return false;
+
+        // Double-click collects matching stacks into the carried item, like vanilla.
+        if (doubleClick) {
+            sendSlotAction(ActionType.PICKUP_ALL, SlotInfo.SlotType.OFFHAND.getEquipmentSlot(), -1, false, false, button);
+            return true;
+        }
 
         // Check armor slots
         for (ArmorSlotWidget slot : armorSlots) {

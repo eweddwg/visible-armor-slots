@@ -58,7 +58,7 @@ public class HandledScreenMixin {
         }
 
         ArmorSlotsOverlay overlay = VisiblearmorslotsClient.getArmorSlotsOverlay();
-        if (overlay != null && overlay.mouseClicked(event.x(), event.y(), event.button(), event.hasShiftDown(), event.hasControlDown())) {
+        if (overlay != null && overlay.mouseClicked(event.x(), event.y(), event.button(), event.hasShiftDown(), event.hasControlDown(), doubleClick)) {
             cir.setReturnValue(true);
             cir.cancel();
         }
