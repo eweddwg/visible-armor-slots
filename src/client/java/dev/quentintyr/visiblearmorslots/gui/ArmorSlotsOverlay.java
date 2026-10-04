@@ -185,7 +185,7 @@ public class ArmorSlotsOverlay {
         boolean offhandShown = offhandSlot != null;
         ModConfig config = ModConfig.getInstance();
         Identifier tex;
-        if (config.isDarkMode()) {
+        if (config.isDarkModeEffective()) {
             tex = offhandShown ? COLUMN_TEXTURE_FULL_DARK : COLUMN_TEXTURE_COMPACT_DARK;
         } else {
             tex = offhandShown ? COLUMN_TEXTURE_FULL : COLUMN_TEXTURE_COMPACT;

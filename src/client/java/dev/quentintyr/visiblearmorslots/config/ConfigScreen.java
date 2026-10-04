@@ -90,10 +90,13 @@ public class ConfigScreen extends Screen {
                         (b, v) -> config.setShowOffhandSlot(v)));
         y += step;
 
-        addRenderableWidget(CycleButton.onOffBuilder(config.isDarkMode())
+        addRenderableWidget(CycleButton.<ModConfig.DarkMode>builder(
+                        s -> Component.literal(s.toString()),
+                        () -> config.getDarkMode())
+                .withValues(ModConfig.DarkMode.AUTO, ModConfig.DarkMode.ON, ModConfig.DarkMode.OFF)
                 .create(x, y, w, h,
                         Component.translatable("config.visiblearmorslots.darkMode"),
-                        (b, v) -> config.setDarkMode(v)));
+                        (b, s) -> config.setDarkMode(s)));
         y += step;
 
         addRenderableWidget(CycleButton.<ModConfig.Side>builder(

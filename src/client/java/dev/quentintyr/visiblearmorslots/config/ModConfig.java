@@ -23,18 +23,22 @@ public class ModConfig {
         LEFT, RIGHT
     }
 
+    public enum DarkMode {
+        AUTO, ON, OFF
+    }
+
     private Side positioning = Side.LEFT;
     private int marginX = 4;
     private int marginY = 0;
     private boolean enabled = true;
     private boolean showTooltips = true;
-    private boolean showOffhandSlot = true; 
-    private boolean darkMode = false; 
+    private boolean showOffhandSlot = true;
+    private DarkMode darkMode = DarkMode.AUTO;
     private Set<String> disabledContainers = new HashSet<>();
 
     private static final String FILE_NAME = "visiblearmorslots.json";
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final int CONFIG_VERSION = 3; 
+    private static final int CONFIG_VERSION = 4; 
     
     private static ModConfig instance;
 
@@ -82,8 +86,19 @@ public class ModConfig {
         return positioning == Side.LEFT;
     }
 
-    public boolean isDarkMode() {
+    public DarkMode getDarkMode() {
         return darkMode;
+    }
+
+    /**
+     * Effective dark mode: ON always, OFF never, AUTO follows detected themes.
+     */
+    public boolean isDarkModeEffective() {
+        return switch (darkMode) {
+            case ON -> true;
+            case OFF -> false;
+            case AUTO -> dev.quentintyr.visiblearmorslots.util.DarkThemeDetector.isDarkThemeActive();
+        };
     }
 
     public Set<String> getDisabledContainers() {
@@ -110,7 +125,7 @@ public class ModConfig {
         this.showTooltips = showTooltips;
     }
 
-    public void setDarkMode(boolean darkMode) {
+    public void setDarkMode(DarkMode darkMode) {
         this.darkMode = darkMode;
     }
 
@@ -181,8 +196,14 @@ public class ModConfig {
                 cfg.showOffhandSlot = root.get("showOffhandSlot").getAsBoolean();
             if (root.has("showTooltips"))
                 cfg.showTooltips = root.get("showTooltips").getAsBoolean();
-            if (root.has("darkMode"))
-                cfg.darkMode = root.get("darkMode").getAsBoolean();
+            if (root.has("darkMode")) {
+                try {
+                    cfg.darkMode = DarkMode.valueOf(root.get("darkMode").getAsString().toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    // Legacy boolean: true meant ON, anything else becomes AUTO.
+                    cfg.darkMode = root.get("darkMode").getAsBoolean() ? DarkMode.ON : DarkMode.AUTO;
+                }
+            }
             if (root.has("positioning")) {
                 try {
                     cfg.positioning = Side.valueOf(root.get("positioning").getAsString().toUpperCase());
@@ -225,7 +246,7 @@ public class ModConfig {
         root.addProperty("marginX", cfg.marginX);
         root.addProperty("marginY", cfg.marginY);
         root.addProperty("showOffhandSlot", cfg.showOffhandSlot);
-        root.addProperty("darkMode", cfg.darkMode);
+        root.addProperty("darkMode", cfg.darkMode.name());
         
         // Container blocklist
         root.addProperty("_comment_3", "=== Container Blocklist (leave empty to allow all) ===");
