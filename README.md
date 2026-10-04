@@ -3,7 +3,7 @@
 
 Visible Armor Slots is a small client-side utility mod that pins your armor slots (and, optionally, your off-hand slot) next to container screens, so you can equip, swap, or drop gear without opening your inventory.
 
-It also supports some more advanced features, such as a dark mode, automatic repositioning around potion effects, quick actions for equipping, swapping, and dropping items, and deep configuration, from the slots' position to which containers they appear in.
+It also supports some more advanced features, such as a dark mode, quick actions for equipping, swapping, and dropping items, and deep configuration, from the slots' position to which containers they appear in.
 
 ![Dark Mode](docs/images/placeholder-minecraft-26.3.webp)
 
