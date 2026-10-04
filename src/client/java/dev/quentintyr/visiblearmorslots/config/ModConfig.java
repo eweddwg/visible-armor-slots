@@ -30,11 +30,11 @@ public class ModConfig {
     private boolean showTooltips = true;
     private boolean showOffhandSlot = true; 
     private boolean darkMode = false; 
-    private Set<String> allowedContainers = new HashSet<>();
+    private Set<String> disabledContainers = new HashSet<>();
 
     private static final String FILE_NAME = "visiblearmorslots.json";
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final int CONFIG_VERSION = 2; 
+    private static final int CONFIG_VERSION = 3; 
     
     private static ModConfig instance;
 
@@ -46,15 +46,7 @@ public class ModConfig {
     }
 
     private ModConfig() {
-        // Default screen handler IDs to show overlay on
-        Collections.addAll(allowedContainers,
-                "minecraft:crafting",
-                "minecraft:anvil",
-                "minecraft:enchantment",
-                "minecraft:generic_9x3",
-                "minecraft:generic_9x6",
-                "minecraft:grindstone",
-                "minecraft:smithing");
+        // Blocklist: empty means everything is allowed.
     }
 
     public Side getPositioning() {
@@ -94,8 +86,8 @@ public class ModConfig {
         return darkMode;
     }
 
-    public Set<String> getAllowedContainers() {
-        return Collections.unmodifiableSet(allowedContainers);
+    public Set<String> getDisabledContainers() {
+        return Collections.unmodifiableSet(disabledContainers);
     }
 
     public void setPositioning(Side positioning) {
@@ -127,42 +119,32 @@ public class ModConfig {
     }
 
     public boolean isContainerAllowed(Identifier id) {
-        if (allowedContainers.isEmpty())
-            return true; // empty means allow all
-        return allowedContainers.contains(id.toString());
+        return !disabledContainers.contains(id.toString());
     }
-    
+
     /**
-     * Check if a container is in the allowed list (not checking if empty = allow all)
+     * Check if a container is explicitly disabled.
      */
-    public boolean isContainerInList(String containerId) {
-        return allowedContainers.contains(containerId);
+    public boolean isContainerDisabled(String containerId) {
+        return disabledContainers.contains(containerId);
     }
-    
+
     /**
      * Enable or disable a specific container
      */
     public void setContainerEnabled(String containerId, boolean enabled) {
         if (enabled) {
-            allowedContainers.add(containerId);
+            disabledContainers.remove(containerId);
         } else {
-            allowedContainers.remove(containerId);
+            disabledContainers.add(containerId);
         }
     }
-    
+
     /**
-     * Reset containers to default list
+     * Reset containers to default (everything allowed)
      */
     public void resetContainersToDefault() {
-        allowedContainers.clear();
-        Collections.addAll(allowedContainers,
-                "minecraft:crafting",
-                "minecraft:anvil",
-                "minecraft:enchantment",
-                "minecraft:generic_9x3",
-                "minecraft:generic_9x6",
-                "minecraft:grindstone",
-                "minecraft:smithing");
+        disabledContainers.clear();
     }
     
     /**
@@ -211,11 +193,13 @@ public class ModConfig {
                 cfg.setMarginX(root.get("marginX").getAsInt());
             if (root.has("marginY"))
                 cfg.setMarginY(root.get("marginY").getAsInt());
-            if (root.has("allowedContainers")) {
-                cfg.allowedContainers.clear();
-                JsonArray arr = root.getAsJsonArray("allowedContainers");
-                arr.forEach(e -> cfg.allowedContainers.add(e.getAsString()));
+            if (root.has("disabledContainers")) {
+                cfg.disabledContainers.clear();
+                JsonArray arr = root.getAsJsonArray("disabledContainers");
+                arr.forEach(e -> cfg.disabledContainers.add(e.getAsString()));
             }
+            // Legacy allowlist from v2 and earlier is intentionally ignored:
+            // semantics flipped to blocklist, old entries do not transfer.
         } catch (IOException e) {
             dev.quentintyr.visiblearmorslots.Visiblearmorslots.LOGGER.warn("Failed to load config file, using defaults: {}", e.getMessage());
         } catch (Exception e) {
@@ -243,11 +227,11 @@ public class ModConfig {
         root.addProperty("showOffhandSlot", cfg.showOffhandSlot);
         root.addProperty("darkMode", cfg.darkMode);
         
-        // Container whitelist
-        root.addProperty("_comment_3", "=== Container Whitelist (leave empty to allow all) ===");
+        // Container blocklist
+        root.addProperty("_comment_3", "=== Container Blocklist (leave empty to allow all) ===");
         JsonArray arr = new JsonArray();
-        cfg.allowedContainers.forEach(arr::add);
-        root.add("allowedContainers", arr);
+        cfg.disabledContainers.forEach(arr::add);
+        root.add("disabledContainers", arr);
         
         try (Writer writer = Files.newBufferedWriter(path)) {
             GSON.toJson(root, writer);

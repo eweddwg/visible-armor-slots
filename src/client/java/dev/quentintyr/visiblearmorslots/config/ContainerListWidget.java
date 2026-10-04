@@ -96,7 +96,7 @@ public class ContainerListWidget extends ContainerObjectSelectionList<ContainerL
         public ContainerEntry(Identifier id, String title, List<String> sources) {
             this.id = id;
             this.title = title;
-            this.enabled = config.isContainerInList(id.toString());
+            this.enabled = !config.isContainerDisabled(id.toString());
         }
 
         @Override
