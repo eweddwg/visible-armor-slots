@@ -78,8 +78,9 @@ public class ContainerListWidget extends ContainerObjectSelectionList<ContainerL
         }
 
         @Override
-        public Component getNarration() {
-            return title;
+        public java.util.List<? extends net.minecraft.client.gui.narration.NarratableEntry> narratables() {
+            // TODO: proper screen-reader narration for section titles
+            return java.util.List.of();
         }
     }
 
@@ -148,8 +149,9 @@ public class ContainerListWidget extends ContainerObjectSelectionList<ContainerL
         }
 
         @Override
-        public Component getNarration() {
-            return Component.literal(title + " (" + (enabled ? "enabled" : "disabled") + ")");
+        public java.util.List<? extends net.minecraft.client.gui.narration.NarratableEntry> narratables() {
+            // TODO: proper screen-reader narration for container rows
+            return java.util.List.of();
         }
     }
 
