@@ -54,6 +54,19 @@ public class MouseSwapResolver {
 
     private static void performSwap(ServerPlayer player, EquipmentSlot slot,
             ItemStack equipped, ItemStack cursor, int button) {
+        if (button == 2) {
+            // Middle-click clones the stack in creative, does nothing in survival.
+            // Game mode is read server-side, never trusted from the payload.
+            if (player.isCreative() && cursor.isEmpty() && !equipped.isEmpty()) {
+                player.containerMenu.setCarried(equipped.copy());
+                InventoryUtil.syncInventoryFull(player);
+            }
+            return;
+        }
+        if (button != 0 && button != -1) {
+            // Unknown mouse buttons do nothing, like vanilla.
+            return;
+        }
         if (button == 1) {
             performRightClick(player, slot, equipped.copy(), cursor.copy());
             return;
