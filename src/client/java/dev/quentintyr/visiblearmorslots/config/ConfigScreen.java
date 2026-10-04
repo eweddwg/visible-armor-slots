@@ -108,30 +108,35 @@ public class ConfigScreen extends Screen {
                         (b, s) -> config.setPositioning(s)));
         y += step;
 
+        // Slider ranges follow the current screen size: X can push to the edge,
+        // Y spans the full height. Position itself clamps on-screen.
+        final int maxX = Math.max(1, width);
+        final int maxY = Math.max(1, height);
+
         addRenderableWidget(new AbstractSliderButton(x, y, w, h,
                 Component.translatable("config.visiblearmorslots.marginX", config.getMarginX()),
-                config.getMarginX() / 128.0) {
+                Math.min(1.0, config.getMarginX() / (double) maxX)) {
             @Override
             protected void updateMessage() {
-                setMessage(Component.translatable("config.visiblearmorslots.marginX", (int)(value * 128)));
+                setMessage(Component.translatable("config.visiblearmorslots.marginX", (int)(value * maxX)));
             }
             @Override
             protected void applyValue() {
-                config.setMarginX((int)(value * 128));
+                config.setMarginX((int)(value * maxX));
             }
         });
         y += step;
 
         addRenderableWidget(new AbstractSliderButton(x, y, w, h,
                 Component.translatable("config.visiblearmorslots.marginY", config.getMarginY()),
-                (config.getMarginY() + 64) / 128.0) {
+                Math.min(1.0, Math.max(0.0, (config.getMarginY() + maxY) / (2.0 * maxY)))) {
             @Override
             protected void updateMessage() {
-                setMessage(Component.translatable("config.visiblearmorslots.marginY", (int)(value * 128) - 64));
+                setMessage(Component.translatable("config.visiblearmorslots.marginY", (int)(value * 2 * maxY) - maxY));
             }
             @Override
             protected void applyValue() {
-                config.setMarginY((int)(value * 128) - 64);
+                config.setMarginY((int)(value * 2 * maxY) - maxY);
             }
         });
     }

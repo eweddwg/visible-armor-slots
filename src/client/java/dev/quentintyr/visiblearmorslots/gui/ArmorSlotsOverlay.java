@@ -128,18 +128,23 @@ public class ArmorSlotsOverlay {
         // Effective side: LEFT mirrors to RIGHT while the recipe book is open.
         ModConfig.Side side = effectiveSide();
         lastEffectiveSide = side;
+        // X moves strictly outward from the container; anything off-screen is
+        // clamped back so the column is never lost.
         if (side == ModConfig.Side.RIGHT) {
-            baseX = screenLeft + accessor.getImageWidth() + config.getMarginX();
+            baseX = Math.clamp(screenLeft + accessor.getImageWidth() + config.getMarginX(), 0,
+                    screen.width - 24);
         } else {
-            baseX = screenLeft - 28 - config.getMarginX();
+            baseX = Math.clamp(screenLeft - 28 - config.getMarginX(), 0,
+                    Math.max(0, screen.width - 24));
         }
 
         // Bottom-align the column regardless of whether the offhand slot is shown.
         // Full column height (with offhand) is 100; compact is 78. We always keep a
         // 4px padding from the bottom (matching previous logic: 104 = 100 + 4).
         // Using (columnHeight + 4) keeps the bottom edge consistent when the height
-        // changes.
-        baseY = screenTop + screenHeight - (columnHeight + 4) + config.getMarginY();
+        // changes. Clamped so the column never leaves the screen.
+        baseY = Math.clamp(screenTop + screenHeight - (columnHeight + 4) + config.getMarginY(), 0,
+                Math.max(0, screen.height - columnHeight));
     }
 
     private void createSlots() {

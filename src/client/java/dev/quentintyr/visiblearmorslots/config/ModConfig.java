@@ -110,11 +110,11 @@ public class ModConfig {
     }
 
     public void setMarginX(int marginX) {
-        this.marginX = Math.max(0, Math.min(128, marginX));
+        this.marginX = Math.max(0, marginX);
     }
 
     public void setMarginY(int marginY) {
-        this.marginY = Math.max(-64, Math.min(64, marginY));
+        this.marginY = marginY;
     }
 
     public void setEnabled(boolean enabled) {
