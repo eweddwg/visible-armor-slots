@@ -14,8 +14,7 @@ public class OffhandSlotWidget {
     private final int x;
     private final int y;
 
-        private static final Identifier EMPTY_OFFHAND_SLOT = Identifier.parse(
-            "minecraft:textures/item/empty_armor_slot_shield.png");
+        private static final Identifier EMPTY_OFFHAND_SLOT = Identifier.withDefaultNamespace("container/slot/shield");
 
     public OffhandSlotWidget(int x, int y) {
         this.x = x;
@@ -25,7 +24,7 @@ public class OffhandSlotWidget {
     public void render(GuiGraphicsExtractor context, ItemStack stack, int mouseX, int mouseY) {
         if (stack.isEmpty()) {
             // Draw shield icon for empty off-hand slot
-            context.blit(RenderPipelines.GUI_TEXTURED, EMPTY_OFFHAND_SLOT, x, y, 0, 0, 16, 16, 16, 16);
+            context.blitSprite(RenderPipelines.GUI_TEXTURED, EMPTY_OFFHAND_SLOT, x, y, 16, 16);
         } else {
             // Draw item with count
             context.fakeItem(stack, x, y);

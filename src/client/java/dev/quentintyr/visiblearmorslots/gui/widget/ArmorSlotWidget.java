@@ -19,14 +19,11 @@ public class ArmorSlotWidget {
     private final int x;
     private final int y;
 
-    private static final Identifier EMPTY_HELMET_SLOT = Identifier.parse(
-            "minecraft:textures/item/empty_armor_slot_helmet.png");
-    private static final Identifier EMPTY_CHEST_SLOT = Identifier.parse(
-            "minecraft:textures/item/empty_armor_slot_chestplate.png");
-    private static final Identifier EMPTY_LEGS_SLOT = Identifier.parse(
-            "minecraft:textures/item/empty_armor_slot_leggings.png");
-    private static final Identifier EMPTY_BOOTS_SLOT = Identifier.parse(
-            "minecraft:textures/item/empty_armor_slot_boots.png");
+    // Empty slot background sprites (moved to container/slot/ in 1.21.4)
+    private static final Identifier EMPTY_HELMET_SLOT = Identifier.withDefaultNamespace("container/slot/helmet");
+    private static final Identifier EMPTY_CHEST_SLOT = Identifier.withDefaultNamespace("container/slot/chestplate");
+    private static final Identifier EMPTY_LEGS_SLOT = Identifier.withDefaultNamespace("container/slot/leggings");
+    private static final Identifier EMPTY_BOOTS_SLOT = Identifier.withDefaultNamespace("container/slot/boots");
 
     public ArmorSlotWidget(SlotInfo.SlotType slotType, int x, int y) {
         this.slotType = slotType;
@@ -38,7 +35,7 @@ public class ArmorSlotWidget {
         if (stack.isEmpty()) {
             // Draw empty slot texture
             Identifier emptyTexture = getEmptySlotTexture();
-            context.blit(RenderPipelines.GUI_TEXTURED, emptyTexture, x, y, 0, 0, 16, 16, 16, 16);
+            context.blitSprite(RenderPipelines.GUI_TEXTURED, emptyTexture, x, y, 16, 16);
         } else {
             // Draw item with count (always 1 for armor)
             context.fakeItem(stack, x, y);
