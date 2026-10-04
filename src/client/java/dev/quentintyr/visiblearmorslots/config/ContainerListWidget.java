@@ -78,6 +78,11 @@ public class ContainerListWidget extends ContainerObjectSelectionList<ContainerL
         }
 
         @Override
+        public java.util.List<? extends net.minecraft.client.gui.components.events.GuiEventListener> children() {
+            return java.util.List.of();
+        }
+
+        @Override
         public java.util.List<? extends net.minecraft.client.gui.narration.NarratableEntry> narratables() {
             // TODO: proper screen-reader narration for section titles
             return java.util.List.of();
@@ -146,6 +151,11 @@ public class ContainerListWidget extends ContainerObjectSelectionList<ContainerL
                 return true;
             }
             return false;
+        }
+
+        @Override
+        public java.util.List<? extends net.minecraft.client.gui.components.events.GuiEventListener> children() {
+            return java.util.List.of();
         }
 
         @Override
