@@ -361,12 +361,9 @@ public class ArmorSlotsOverlay {
             }
         }
 
-        // Handle F key for offhand swap
-        if (keyCode == KeyCodes.KEY_F && offhandSlot != null) {
-            sendSlotAction(ActionType.OFFHAND_SWAP, SlotInfo.SlotType.OFFHAND.getEquipmentSlot(), -1, false, false);
-            return true;
-        }
-
+        // Handle F key for offhand swap: not intercepted on purpose.
+        // Vanilla handles F itself everywhere (swap held item with offhand),
+        // so we stay out of the way for 1:1 vanilla behavior.
         return false;
     }
 

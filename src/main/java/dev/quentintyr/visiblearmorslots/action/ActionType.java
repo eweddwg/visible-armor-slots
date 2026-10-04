@@ -7,6 +7,5 @@ public enum ActionType {
     MOUSE_SWAP,
     QUICK_TRANSFER, // Shift-click
     HOTBAR_SWAP, // Number key
-    OFFHAND_SWAP, // F key
     DROP // Q key
 }
