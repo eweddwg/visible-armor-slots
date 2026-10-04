@@ -60,9 +60,8 @@ public final class DarkThemeDetector {
                 return false;
             }
             for (String packId : mc.getResourcePackRepository().getSelectedIds()) {
-                String norm = normalize(packId);
                 for (String slug : DARK_PACK_SLUGS) {
-                    if (norm.contains(normalize(slug))) {
+                    if (matchesSlug(packId, slug)) {
                         return true;
                     }
                 }
@@ -70,6 +69,20 @@ public final class DarkThemeDetector {
         } catch (Throwable ignored) {
         }
         return false;
+    }
+
+    private static boolean matchesSlug(String packId, String slug) {
+        String normPack = normalize(packId);
+        String[] tokens = slug.toLowerCase().split("[^a-z0-9]+");
+        for (String token : tokens) {
+            if (token.isEmpty()) {
+                continue;
+            }
+            if (!normPack.contains(token)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static String normalize(String s) {
