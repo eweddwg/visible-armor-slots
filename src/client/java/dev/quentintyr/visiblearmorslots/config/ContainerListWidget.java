@@ -83,11 +83,6 @@ public class ContainerListWidget extends ContainerObjectSelectionList<ContainerL
         }
 
         @Override
-        public Component getNarration() {
-            return title;
-        }
-
-        @Override
         public java.util.List<? extends net.minecraft.client.gui.narration.NarratableEntry> narratables() {
             return java.util.List.of();
         }
@@ -153,19 +148,13 @@ public class ContainerListWidget extends ContainerObjectSelectionList<ContainerL
             if (event.x() >= lastToggleX && event.x() < lastToggleX + lastToggleWidth &&
                 event.y() >= lastToggleY && event.y() < lastToggleY + lastToggleHeight) {
                 toggle();
-                return true;
             }
-            return false;
+            return super.mouseClicked(event, doubleClick);
         }
 
         @Override
         public java.util.List<? extends net.minecraft.client.gui.components.events.GuiEventListener> children() {
             return java.util.List.of();
-        }
-
-        @Override
-        public Component getNarration() {
-            return Component.literal(title + " (" + (enabled ? "enabled" : "disabled") + ")");
         }
 
         @Override
