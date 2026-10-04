@@ -58,11 +58,29 @@ public class MouseSwapResolver {
             performRightClick(player, slot, equipped.copy(), cursor.copy());
             return;
         }
-        // Equip the new item (or clear the slot if cursor is empty)
-        player.setItemSlot(slot, cursor.copy());
-
-        // Put the previously equipped item on the cursor
-        player.containerMenu.setCarried(equipped.copy());
+        if (cursor.isEmpty()) {
+            // Pick up the whole stack
+            player.setItemSlot(slot, ItemStack.EMPTY);
+            player.containerMenu.setCarried(equipped.copy());
+        } else if (equipped.isEmpty()) {
+            // Place the whole stack
+            player.setItemSlot(slot, cursor.copy());
+            player.containerMenu.setCarried(ItemStack.EMPTY);
+        } else if (ItemStack.isSameItemSameComponents(equipped, cursor)) {
+            // Merge into the slot up to its max, remainder stays on cursor
+            int room = equipped.getMaxStackSize() - equipped.getCount();
+            int move = Math.min(room, cursor.getCount());
+            if (move > 0) {
+                equipped.grow(move);
+                cursor.shrink(move);
+            }
+            player.setItemSlot(slot, equipped);
+            player.containerMenu.setCarried(cursor);
+        } else {
+            // Different items: full swap
+            player.setItemSlot(slot, cursor.copy());
+            player.containerMenu.setCarried(equipped.copy());
+        }
 
         // Force inventory sync to client
         InventoryUtil.syncInventoryFull(player);
