@@ -167,6 +167,7 @@ public class ContainerListWidget extends ContainerObjectSelectionList<ContainerL
         String[] parts = path.split("_");
         StringBuilder sb = new StringBuilder();
         for (String p : parts) {
+            if (p.isEmpty()) continue; // ids like "_foo" or "a__b" yield empty segments
             if (!sb.isEmpty()) sb.append(" ");
             sb.append(Character.toUpperCase(p.charAt(0))).append(p.substring(1));
         }
