@@ -85,13 +85,14 @@ public class ArmorSlotsOverlay {
         try {
             MenuType<?> type = screen.getMenu().getType();
             Identifier handlerId = BuiltInRegistries.MENU.getKey(type);
-            dev.quentintyr.visiblearmorslots.Visiblearmorslots.LOGGER.info("Container opened: {} - Allowed: {}",
+            dev.quentintyr.visiblearmorslots.Visiblearmorslots.LOGGER.debug("Container opened: {} - Allowed: {}",
                 handlerId, ModConfig.getInstance().isContainerAllowed(handlerId));
             if (handlerId != null && !ModConfig.getInstance().isContainerAllowed(handlerId)) {
                 visible = false;
                 return;
             }
-        } catch (Throwable ignored) {
+        } catch (RuntimeException e) {
+            dev.quentintyr.visiblearmorslots.Visiblearmorslots.LOGGER.warn("Failed to resolve container type, allowing overlay: {}", e.getMessage());
         }
 
         visible = true;
