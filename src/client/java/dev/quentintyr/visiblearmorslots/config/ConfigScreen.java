@@ -110,28 +110,28 @@ public class ConfigScreen extends Screen {
 
         addRenderableWidget(new AbstractSliderButton(x, y, w, h,
                 Component.translatable("config.visiblearmorslots.marginX", config.getMarginX()),
-                config.getMarginX() / 31.0) {
+                config.getMarginX() / 128.0) {
             @Override
             protected void updateMessage() {
-                setMessage(Component.translatable("config.visiblearmorslots.marginX", (int)(value * 31)));
+                setMessage(Component.translatable("config.visiblearmorslots.marginX", (int)(value * 128)));
             }
             @Override
             protected void applyValue() {
-                config.setMarginX((int)(value * 31));
+                config.setMarginX((int)(value * 128));
             }
         });
         y += step;
 
         addRenderableWidget(new AbstractSliderButton(x, y, w, h,
                 Component.translatable("config.visiblearmorslots.marginY", config.getMarginY()),
-                (config.getMarginY() + 64) / 127.0) {
+                (config.getMarginY() + 64) / 128.0) {
             @Override
             protected void updateMessage() {
-                setMessage(Component.translatable("config.visiblearmorslots.marginY", (int)(value * 127) - 64));
+                setMessage(Component.translatable("config.visiblearmorslots.marginY", (int)(value * 128) - 64));
             }
             @Override
             protected void applyValue() {
-                config.setMarginY((int)(value * 127) - 64);
+                config.setMarginY((int)(value * 128) - 64);
             }
         });
     }

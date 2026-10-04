@@ -208,9 +208,9 @@ public class ModConfig {
                 }
             }
             if (root.has("marginX"))
-                cfg.marginX = root.get("marginX").getAsInt();
+                cfg.setMarginX(root.get("marginX").getAsInt());
             if (root.has("marginY"))
-                cfg.marginY = root.get("marginY").getAsInt();
+                cfg.setMarginY(root.get("marginY").getAsInt());
             if (root.has("allowedContainers")) {
                 cfg.allowedContainers.clear();
                 JsonArray arr = root.getAsJsonArray("allowedContainers");
