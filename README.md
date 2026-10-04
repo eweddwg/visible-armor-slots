@@ -1,7 +1,7 @@
 # Visible Armor Slots
-![Armor and off-hand slots next to a container](docs/images/placeholder-minecraft-26.3.webp)
+![Armor and off hand slots next to a container](docs/images/placeholder-minecraft-26.3.webp)
 
-Visible Armor Slots is a small client-side utility mod that pins your armor slots (and, optionally, your off-hand slot) next to container screens, so you can equip, swap, or drop gear without opening your inventory.
+Visible Armor Slots is a small client-side utility mod that pins your armor slots (and, optionally, your off hand slot) next to container screens, so you can equip, swap, or drop gear without opening your inventory.
 
 It also supports some more advanced features, such as a dark mode, quick actions for equipping, swapping, and dropping items, automatic mirroring to the other side while the recipe book is open, and deep configuration, from the slots' position to which containers they appear in.
 
