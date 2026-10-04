@@ -1,0 +1,22 @@
+{
+  "gui.visiblearmorslots.empty.helmet": "Пустой слот шлема",
+  "gui.visiblearmorslots.empty.chestplate": "Пустой слот нагрудника",
+  "gui.visiblearmorslots.empty.leggings": "Пустой слот поножей",
+  "gui.visiblearmorslots.empty.boots": "Пустой слот ботинок",
+  "gui.visiblearmorslots.empty.offhand": "Пустой слот второй руки",
+  "config.visiblearmorslots.title": "Настройки Visible Armor Slots",
+  "config.visiblearmorslots.enabled": "Включено",
+  "config.visiblearmorslots.showTooltips": "Показывать подсказки",
+  "config.visiblearmorslots.showOffhand": "Показывать слот второй руки",
+  "config.visiblearmorslots.darkMode": "Тёмный режим",
+  "config.visiblearmorslots.side": "Сторона",
+  "config.visiblearmorslots.marginX": "Горизонтальный отступ: %d px",
+  "config.visiblearmorslots.marginY": "Вертикальный отступ: %d px",
+  "config.visiblearmorslots.containers": "Настроить контейнеры...",
+  "config.visiblearmorslots.containers.help": "Нажмите, чтобы выбрать, у каких контейнеров показывать слоты брони",
+  "config.visiblearmorslots.containers.enableAll": "Включить все",
+  "config.visiblearmorslots.containers.disableAll": "Выключить все",
+  "config.visiblearmorslots.containers.reset": "Сбросить",
+  "config.visiblearmorslots.tab.settings": "Настройки",
+  "config.visiblearmorslots.tab.containers": "Контейнеры"
+}
