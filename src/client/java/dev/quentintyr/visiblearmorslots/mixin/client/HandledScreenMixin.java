@@ -1,6 +1,7 @@
 package dev.quentintyr.visiblearmorslots.mixin.client;
 
 import dev.quentintyr.visiblearmorslots.VisiblearmorslotsClient;
+import dev.quentintyr.visiblearmorslots.config.ModConfig;
 import dev.quentintyr.visiblearmorslots.gui.ArmorSlotsOverlay;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -16,9 +17,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(AbstractContainerScreen.class)
 public class HandledScreenMixin {
-
-    @Unique
-    private Boolean vas$lastRecipeOpen = null;
 
     @Unique
     private boolean vas$isRecipeBookOpen() {
@@ -39,19 +37,11 @@ public class HandledScreenMixin {
             return;
         }
 
-        // Refresh overlay when recipe book toggles
-        boolean openNow = vas$isRecipeBookOpen();
-        if (vas$lastRecipeOpen == null || vas$lastRecipeOpen != openNow) {
-            vas$lastRecipeOpen = openNow;
-            ArmorSlotsOverlay overlayRef = VisiblearmorslotsClient.getArmorSlotsOverlay();
-            if (overlayRef != null) {
-                overlayRef.initialize((AbstractContainerScreen<?>) (Object) this);
-            }
-        }
-
-        // Do not render overlay while recipe book is open
-        if (openNow) {
-            return;
+        // Recipe book state matters only on LEFT side (see ModConfig).
+        boolean openNow = ModConfig.getInstance().shouldMirrorForRecipeBook() && vas$isRecipeBookOpen();
+        ArmorSlotsOverlay overlayRef = VisiblearmorslotsClient.getArmorSlotsOverlay();
+        if (overlayRef != null) {
+            overlayRef.setBookOpen(openNow);
         }
 
         ArmorSlotsOverlay overlay = VisiblearmorslotsClient.getArmorSlotsOverlay();
@@ -67,11 +57,6 @@ public class HandledScreenMixin {
             return;
         }
 
-        // While recipe book is open, ignore overlay interactions
-        if (vas$isRecipeBookOpen()) {
-            return;
-        }
-
         ArmorSlotsOverlay overlay = VisiblearmorslotsClient.getArmorSlotsOverlay();
         if (overlay != null && overlay.mouseClicked(event.x(), event.y(), event.button(), event.hasShiftDown(), event.hasControlDown())) {
             cir.setReturnValue(true);
@@ -82,10 +67,6 @@ public class HandledScreenMixin {
     @Inject(method = "mouseReleased(Lnet/minecraft/client/input/MouseButtonEvent;)Z", at = @At("HEAD"), cancellable = true)
     private void onMouseReleased(MouseButtonEvent event, CallbackInfoReturnable<Boolean> cir) {
         if ((Object) this instanceof InventoryScreen) {
-            return;
-        }
-
-        if (vas$isRecipeBookOpen()) {
             return;
         }
 
@@ -103,10 +84,6 @@ public class HandledScreenMixin {
     @Inject(method = "keyPressed(Lnet/minecraft/client/input/KeyEvent;)Z", at = @At("HEAD"), cancellable = true)
     private void onKeyPressed(KeyEvent event, CallbackInfoReturnable<Boolean> cir) {
         if ((Object) this instanceof InventoryScreen) {
-            return;
-        }
-
-        if (vas$isRecipeBookOpen()) {
             return;
         }
 

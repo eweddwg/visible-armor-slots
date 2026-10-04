@@ -81,6 +81,15 @@ public class ModConfig {
         return showOffhandSlot;
     }
 
+    /**
+     * Whether the recipe book state matters at all. Only the LEFT side can
+     * collide with the book (it opens on the left), so on RIGHT the whole
+     * book check is disabled instead of being consulted every frame.
+     */
+    public boolean shouldMirrorForRecipeBook() {
+        return positioning == Side.LEFT;
+    }
+
     public boolean isDarkMode() {
         return darkMode;
     }

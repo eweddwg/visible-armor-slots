@@ -44,6 +44,9 @@ public class ArmorSlotsOverlay {
     private int columnHeight = 100; // 100 with offhand, 78 without
     private double lastMouseX = -1;
     private double lastMouseY = -1;
+    private boolean bookOpen = false;
+    private ModConfig.Side lastEffectiveSide = null;
+    private AbstractContainerScreen<?> currentScreen;
 
     public int getBaseX() {
         return baseX;
@@ -93,8 +96,26 @@ public class ArmorSlotsOverlay {
 
         visible = true;
         columnHeight = ModConfig.getInstance().isShowOffhandSlot() ? 100 : 78;
+        currentScreen = screen;
+        bookOpen = false;
+        lastEffectiveSide = null;
         calculatePosition(screen);
         createSlots();
+    }
+
+    /**
+     * Called every frame from the mixin. The RIGHT side never mirrors;
+     * on LEFT the slots move right while the book is open.
+     */
+    public void setBookOpen(boolean open) {
+        bookOpen = open;
+    }
+
+    private ModConfig.Side effectiveSide() {
+        if (ModConfig.getInstance().shouldMirrorForRecipeBook() && bookOpen) {
+            return ModConfig.Side.RIGHT;
+        }
+        return ModConfig.getInstance().getPositioning();
     }
 
     private void calculatePosition(AbstractContainerScreen<?> screen) {
@@ -105,8 +126,10 @@ public class ArmorSlotsOverlay {
 
         ModConfig config = ModConfig.getInstance();
 
-        // Start from the chosen side, then apply margins
-        if (config.getPositioning() == ModConfig.Side.RIGHT) {
+        // Effective side: LEFT mirrors to RIGHT while the recipe book is open.
+        ModConfig.Side side = effectiveSide();
+        lastEffectiveSide = side;
+        if (side == ModConfig.Side.RIGHT) {
             baseX = screenLeft + accessor.getImageWidth() + config.getMarginX();
         } else {
             baseX = screenLeft - 28 - config.getMarginX();
@@ -145,6 +168,13 @@ public class ArmorSlotsOverlay {
 
         lastMouseX = mouseX;
         lastMouseY = mouseY;
+
+        // Mirror to the other side when the recipe book opens/closes.
+        // Slots are rebuilt only on flip, not every frame.
+        if (currentScreen != null && effectiveSide() != lastEffectiveSide) {
+            calculatePosition(currentScreen);
+            createSlots();
+        }
 
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
