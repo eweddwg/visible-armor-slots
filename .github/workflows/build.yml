@@ -22,15 +22,9 @@ jobs:
       - name: make gradle wrapper executable
         run: chmod +x ./gradlew
       - name: build
-        run: ./gradlew genSources
+        run: ./gradlew build
       - name: capture build artifacts
         uses: actions/upload-artifact@v5
         with:
           name: Artifacts
           path: build/libs/
-      - name: capture minecraft sources
-        uses: actions/upload-artifact@v5
-        with:
-          name: mc-sources
-          path: .gradle/loom-cache/minecraftMaven/**/*sources*.jar
-          if-no-files-found: error

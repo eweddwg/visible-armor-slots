@@ -25,7 +25,9 @@ public class DropResolver {
         if (equipped.isEmpty())
             return;
 
-        // Drop the equipped item into the world (server-authoritative, not predicted)
+        // Drop the equipped item into the world. SERVER_ONLY: our client does not
+        // predict this action, so the server must play the swing animation itself
+        // (PREDICTED would skip it, used when the client already animated locally).
         player.drop(equipped, false, Prediction.SERVER_ONLY);
 
         // Clear the equipment slot

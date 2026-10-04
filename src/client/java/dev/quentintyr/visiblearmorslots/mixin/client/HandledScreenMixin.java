@@ -23,7 +23,22 @@ public class HandledScreenMixin {
     @Unique
     private boolean vas$isRecipeBookOpen() {
         Object self = this;
-        // Reflection for screens that expose the recipe book widget/component.
+        // 26.3: AbstractRecipeBookScreen holds private recipeBookComponent with isVisible().
+        try {
+            java.lang.reflect.Field field = findRecipeBookField(self.getClass());
+            if (field != null) {
+                field.setAccessible(true);
+                Object widget = field.get(self);
+                if (widget != null) {
+                    java.lang.reflect.Method isVisible = widget.getClass().getMethod("isVisible");
+                    Object result = isVisible.invoke(widget);
+                    if (result instanceof Boolean b)
+                        return b;
+                }
+            }
+        } catch (Throwable ignored) {
+        }
+        // Legacy: mapped getter with isOpen().
         // Mojang name is getRecipeBookComponent, Yarn-era name getRecipeBookWidget.
         for (String getter : new String[] { "getRecipeBookComponent", "getRecipeBookWidget" }) {
             try {
@@ -39,6 +54,17 @@ public class HandledScreenMixin {
             }
         }
         return false;
+    }
+
+    @Unique
+    private static java.lang.reflect.Field findRecipeBookField(Class<?> cls) {
+        for (Class<?> c = cls; c != null && c != Object.class; c = c.getSuperclass()) {
+            try {
+                return c.getDeclaredField("recipeBookComponent");
+            } catch (NoSuchFieldException ignored) {
+            }
+        }
+        return null;
     }
 
     @Inject(method = "extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIF)V", at = @At("RETURN"))
@@ -81,7 +107,7 @@ public class HandledScreenMixin {
         }
 
         ArmorSlotsOverlay overlay = VisiblearmorslotsClient.getArmorSlotsOverlay();
-        if (overlay != null && overlay.mouseClicked(event.x(), event.y(), event.button(), event.modifiers())) {
+        if (overlay != null && overlay.mouseClicked(event.x(), event.y(), event.button(), event.hasShiftDown(), event.hasControlDown())) {
             cir.setReturnValue(true);
             cir.cancel();
         }
@@ -119,7 +145,7 @@ public class HandledScreenMixin {
         }
 
         ArmorSlotsOverlay overlay = VisiblearmorslotsClient.getArmorSlotsOverlay();
-        if (overlay != null && overlay.keyPressed(event.key(), event.keycode(), event.modifiers())) {
+        if (overlay != null && overlay.keyPressed(event.key(), event.hasShiftDown(), event.hasControlDown())) {
             cir.setReturnValue(true);
         }
     }

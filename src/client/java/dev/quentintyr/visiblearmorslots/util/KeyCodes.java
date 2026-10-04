@@ -1,25 +1,27 @@
 package dev.quentintyr.visiblearmorslots.util;
 
+import com.mojang.blaze3d.platform.InputConstants;
+
 /**
- * GLFW key code constants for common keys.
- * Based on GLFW key codes used by Minecraft.
+ * Key constants for hotkeys. SDL scancodes via vanilla InputConstants
+ * (GLFW values are dead since 26.3).
  */
 public class KeyCodes {
-    // Number keys
-    public static final int KEY_1 = 49;
-    public static final int KEY_2 = 50;
-    public static final int KEY_3 = 51;
-    public static final int KEY_4 = 52;
-    public static final int KEY_5 = 53;
-    public static final int KEY_6 = 54;
-    public static final int KEY_7 = 55;
-    public static final int KEY_8 = 56;
-    public static final int KEY_9 = 57;
-    
-    // Action keys
-    public static final int KEY_Q = 81;
-    public static final int KEY_F = 70;
-    
+    // Number keys (positional scancodes, layout-independent)
+    public static final int KEY_1 = InputConstants.KEY_1;
+    public static final int KEY_2 = InputConstants.KEY_2;
+    public static final int KEY_3 = InputConstants.KEY_3;
+    public static final int KEY_4 = InputConstants.KEY_4;
+    public static final int KEY_5 = InputConstants.KEY_5;
+    public static final int KEY_6 = InputConstants.KEY_6;
+    public static final int KEY_7 = InputConstants.KEY_7;
+    public static final int KEY_8 = InputConstants.KEY_8;
+    public static final int KEY_9 = InputConstants.KEY_9;
+
+    // Action keys (positional scancodes)
+    public static final int KEY_Q = InputConstants.KEY_Q;
+    public static final int KEY_F = InputConstants.KEY_F;
+
     private KeyCodes() {
         // Utility class, no instantiation
     }

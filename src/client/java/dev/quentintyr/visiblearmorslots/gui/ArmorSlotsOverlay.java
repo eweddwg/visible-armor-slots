@@ -241,12 +241,9 @@ public class ArmorSlotsOverlay {
         }
     }
 
-    public boolean mouseClicked(double mouseX, double mouseY, int button, int modifiers) {
+    public boolean mouseClicked(double mouseX, double mouseY, int button, boolean isShiftPressed, boolean isCtrlPressed) {
         if (!visible)
             return false;
-
-        boolean isShiftPressed = (modifiers & 1) != 0;
-        boolean isCtrlPressed = (modifiers & 2) != 0;
 
         // Check armor slots
         for (ArmorSlotWidget slot : armorSlots) {
@@ -302,11 +299,9 @@ public class ArmorSlotsOverlay {
         }
     }
 
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    public boolean keyPressed(int keyCode, boolean isShiftPressed, boolean isCtrlPressed) {
         if (!visible)
             return false;
-
-        boolean isShiftPressed = (modifiers & 1) != 0;
 
         // Handle Q key for dropping armor
         if (keyCode == KeyCodes.KEY_Q) {
