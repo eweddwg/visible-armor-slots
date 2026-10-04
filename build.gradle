@@ -87,6 +87,36 @@ jar {
 	}
 }
 
+// TEMP-DIAGNOSTIC (scratch, will be reverted)
+tasks.register("diagnoseMc") {
+	doLast {
+		def base = new File(projectDir, ".gradle/loom-cache")
+		def jars = []
+		base.eachFileRecurse { f -> if (f.name.endsWith(".jar") && f.path.contains("minecraft")) jars.add(f) }
+		def api = org.objectweb.asm.Opcodes.ASM9
+		["ContainerObjectSelectionList\$Entry", "AbstractSelectionList\$Entry"].each { simple ->
+			jars.each { j ->
+				def zip = new java.util.zip.ZipFile(j)
+				try {
+					def en = zip.entries()
+					while (en.hasMoreElements()) {
+						def n = en.nextElement().name
+						if (n.endsWith("/" + simple + ".class")) {
+							println "DIAG_IN $simple :: ${j.name}"
+							new org.objectweb.asm.ClassReader(zip.getInputStream(zip.getEntry(n))).accept(new org.objectweb.asm.ClassVisitor(api) {
+								@Override org.objectweb.asm.MethodVisitor visitMethod(int acc, String mname, String desc, String sig, String[] exc) {
+									if (!mname.startsWith('lambda$') && mname != '<clinit>') println "DIAG_M $simple :: $mname $desc"
+									return null
+								}
+							}, org.objectweb.asm.ClassReader.SKIP_CODE | org.objectweb.asm.ClassReader.SKIP_DEBUG)
+						}
+					}
+				} finally { zip.close() }
+			}
+		}
+	}
+}
+
 // configure the maven publication
 publishing {
 	publications {
