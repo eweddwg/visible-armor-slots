@@ -93,8 +93,6 @@ public class ContainerListWidget extends ContainerObjectSelectionList<ContainerL
         private boolean enabled;
         private final String title;
 
-        private int lastToggleX, lastToggleY, lastToggleWidth, lastToggleHeight;
-
         public ContainerEntry(Identifier id, String title, List<String> sources) {
             this.id = id;
             this.title = title;
@@ -113,12 +111,6 @@ public class ContainerListWidget extends ContainerObjectSelectionList<ContainerL
             int toggleHeight = 14;
             int toggleX = x + 5;
             int toggleY = y + (h - toggleHeight) / 2;
-
-            // Store for click detection
-            lastToggleX = toggleX;
-            lastToggleY = toggleY;
-            lastToggleWidth = toggleWidth;
-            lastToggleHeight = toggleHeight;
 
             // Draw toggle background
             int bgColor = enabled ? 0xFF00AA00 : 0xFF555555;
@@ -145,8 +137,9 @@ public class ContainerListWidget extends ContainerObjectSelectionList<ContainerL
 
         @Override
         public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-            if (event.x() >= lastToggleX && event.x() < lastToggleX + lastToggleWidth &&
-                event.y() >= lastToggleY && event.y() < lastToggleY + lastToggleHeight) {
+            // Whole row toggles, not just the switch itself.
+            if (event.x() >= getX() && event.x() < getX() + getWidth() &&
+                event.y() >= getY() && event.y() < getY() + getHeight()) {
                 toggle();
             }
             return super.mouseClicked(event, doubleClick);
