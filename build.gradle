@@ -87,47 +87,7 @@ jar {
 	}
 }
 
-// TEMP-DIAGNOSTIC (scratch, will be reverted): final client API sweep
-tasks.register("diagnoseMc") {
-	doLast {
-		def api = org.objectweb.asm.Opcodes.ASM9
-		def base = new File(projectDir, ".gradle/loom-cache")
-		def jars = []
-		base.eachFileRecurse { f -> if (f.name.endsWith(".jar") && f.path.contains("minecraft")) jars.add(f) }
-		def findClass = { String simple ->
-			for (j in jars) {
-				def zip = new java.util.zip.ZipFile(j)
-				try {
-					def en = zip.entries()
-					while (en.hasMoreElements()) {
-						def n = en.nextElement().name
-						if (n.endsWith("/" + simple + ".class") || n == simple + ".class") return [j, n]
-					}
-				} finally { zip.close() }
-			}
-			return null
-		}
-		def fullDump = { String simple ->
-			def hit = findClass(simple)
-			if (hit == null) { println "DIAG_NOFILE $simple"; return }
-			def zip = new java.util.zip.ZipFile(hit[0])
-			new org.objectweb.asm.ClassReader(zip.getInputStream(zip.getEntry(hit[1]))).accept(new org.objectweb.asm.ClassVisitor(api) {
-				@Override org.objectweb.asm.MethodVisitor visitMethod(int acc, String mname, String desc, String sig, String[] exc) {
-					if (!mname.startsWith('lambda$') && mname != '<clinit>') println "DIAG_M $simple :: $mname $desc"
-					return null
-				}
-				@Override org.objectweb.asm.FieldVisitor visitField(int acc, String fname, String desc, String sig, Object val) {
-					println "DIAG_F $simple :: $fname $desc"
-					return null
-				}
-			}, org.objectweb.asm.ClassReader.SKIP_CODE | org.objectweb.asm.ClassReader.SKIP_DEBUG)
-			zip.close()
-		}
-		fullDump("AbstractSelectionList\$Entry")
-		fullDump("StringWidget", ~/init|setMessage|getMessage/)
-		fullDump("Checkbox", null)
-	}
-}
+// configure the maven publication
 publishing {
 	publications {
 		create("mavenJava", MavenPublication) {
