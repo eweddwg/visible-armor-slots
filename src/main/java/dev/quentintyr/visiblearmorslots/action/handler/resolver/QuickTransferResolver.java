@@ -24,41 +24,60 @@ public class QuickTransferResolver {
         if (equipped.isEmpty())
             return;
 
-        // Try to move equipped item to main inventory
-        if (insertIntoMainInventory(player, equipped)) {
-            player.setItemSlot(targetSlot, ItemStack.EMPTY);
+        // Move what fits (merging into partial stacks first), leave the rest equipped
+        ItemStack remainder = insertIntoMainInventory(player, equipped.copy());
+        player.setItemSlot(targetSlot, remainder);
 
-            // Force inventory sync to client
-            InventoryUtil.syncInventory(player);
-        }
+        // Force inventory sync to client
+        InventoryUtil.syncInventory(player);
     }
 
-    private static boolean insertIntoMainInventory(ServerPlayer player, ItemStack stack) {
-        // Try to insert into player's main inventory (slots 0-35)
-        for (int i = 9; i < 36; i++) { // Skip hotbar, start with main inventory
-            ItemStack slotStack = player.getInventory().getItem(i);
-            if (slotStack.isEmpty()) {
-                player.getInventory().setItem(i, stack.copy());
-                return true;
-            } else if (slotStack.getItem() == stack.getItem()
-                    && slotStack.getCount() < slotStack.getMaxStackSize()) {
-                int remaining = slotStack.getMaxStackSize() - slotStack.getCount();
-                if (remaining >= stack.getCount()) {
-                    slotStack.grow(stack.getCount());
-                    return true;
+    private static ItemStack insertIntoMainInventory(ServerPlayer player, ItemStack stack) {
+        // Returns whatever did not fit. Tries main inventory first, then hotbar,
+        // topping up partial stacks before taking empty slots.
+        for (int pass = 0; pass < 2; pass++) {
+            for (int i = 9; i < 36; i++) { // Skip hotbar, start with main inventory
+                if (stack.isEmpty())
+                    return stack;
+                ItemStack slotStack = player.getInventory().getItem(i);
+                if (pass == 0) {
+                    if (!slotStack.isEmpty() && ItemStack.isSameItemSameComponents(slotStack, stack)) {
+                        int move = Math.min(slotStack.getMaxStackSize() - slotStack.getCount(), stack.getCount());
+                        if (move > 0) {
+                            slotStack.grow(move);
+                            stack.shrink(move);
+                        }
+                    }
+                } else if (slotStack.isEmpty()) {
+                    player.getInventory().setItem(i, stack.copy());
+                    stack.setCount(0);
+                    return stack;
                 }
             }
         }
 
-        // Try hotbar if main inventory is full
-        for (int i = 0; i < 9; i++) {
-            ItemStack slotStack = player.getInventory().getItem(i);
-            if (slotStack.isEmpty()) {
-                player.getInventory().setItem(i, stack.copy());
-                return true;
+        // Try hotbar if main inventory is full: merge first, then empty slots
+        for (int pass = 0; pass < 2; pass++) {
+            for (int i = 0; i < 9; i++) {
+                if (stack.isEmpty())
+                    return stack;
+                ItemStack slotStack = player.getInventory().getItem(i);
+                if (pass == 0) {
+                    if (!slotStack.isEmpty() && ItemStack.isSameItemSameComponents(slotStack, stack)) {
+                        int move = Math.min(slotStack.getMaxStackSize() - slotStack.getCount(), stack.getCount());
+                        if (move > 0) {
+                            slotStack.grow(move);
+                            stack.shrink(move);
+                        }
+                    }
+                } else if (slotStack.isEmpty()) {
+                    player.getInventory().setItem(i, stack.copy());
+                    stack.setCount(0);
+                    return stack;
+                }
             }
         }
 
-        return false; // No space available
+        return stack; // No space available, remainder stays equipped
     }
 }
