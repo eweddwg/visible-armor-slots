@@ -68,8 +68,8 @@ public class ContainerListWidget extends ContainerObjectSelectionList<ContainerL
         public SectionTitleEntry(Component title) { this.title = title; }
 
         @Override
-        public void extractContent(GuiGraphicsExtractor graphics, int index, int y, boolean hovered, float tickDelta) {
-            graphics.centeredText(minecraft.font, title, getX() + getWidth() / 2, y + (getHeight() - 8) / 2, 0xFFFFFF);
+        public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+            graphics.centeredText(minecraft.font, title, getX() + getWidth() / 2, getY() + (getHeight() - 8) / 2, 0xFFFFFF);
         }
 
         @Override
@@ -83,8 +83,8 @@ public class ContainerListWidget extends ContainerObjectSelectionList<ContainerL
         }
 
         @Override
-        public void updateNarration(net.minecraft.client.gui.narration.NarrationElementOutput output) {
-            output.add(net.minecraft.client.gui.narration.NarratedElementType.TITLE, title);
+        public Component getNarration() {
+            return title;
         }
 
         @Override
@@ -107,8 +107,9 @@ public class ContainerListWidget extends ContainerObjectSelectionList<ContainerL
         }
 
         @Override
-        public void extractContent(GuiGraphicsExtractor graphics, int index, int y, boolean hovered, float tickDelta) {
+        public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             int x = getX();
+            int y = getY();
             int w = getWidth();
             int h = getHeight();
 
@@ -163,9 +164,8 @@ public class ContainerListWidget extends ContainerObjectSelectionList<ContainerL
         }
 
         @Override
-        public void updateNarration(net.minecraft.client.gui.narration.NarrationElementOutput output) {
-            output.add(net.minecraft.client.gui.narration.NarratedElementType.TITLE,
-                    Component.literal(title + " (" + (enabled ? "enabled" : "disabled") + ")"));
+        public Component getNarration() {
+            return Component.literal(title + " (" + (enabled ? "enabled" : "disabled") + ")");
         }
 
         @Override
