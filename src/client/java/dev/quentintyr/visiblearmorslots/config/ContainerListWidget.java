@@ -69,7 +69,7 @@ public class ContainerListWidget extends ContainerObjectSelectionList<ContainerL
 
         @Override
         public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            graphics.centeredText(minecraft.font, title, getX() + getWidth() / 2, getY() + (getHeight() - 8) / 2, 0xFFFFFF);
+            graphics.text(minecraft.font, title, getX() + (getWidth() - minecraft.font.width(title)) / 2, getY() + (getHeight() - 8) / 2, 0xFFFFFF, true);
         }
 
         @Override

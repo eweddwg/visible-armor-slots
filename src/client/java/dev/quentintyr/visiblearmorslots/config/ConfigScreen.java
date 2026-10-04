@@ -185,16 +185,11 @@ public class ConfigScreen extends Screen {
     public void extractRenderState(GuiGraphicsExtractor graphics, int mx, int my, float delta) {
         super.extractRenderState(graphics, mx, my, delta);
 
-        graphics.centeredText(getFont(), title, width / 2, 8, 0xFFFFFF);
+        graphics.text(getFont(), title, width / 2 - getFont().width(title) / 2, 8, 0xFFFFFF, true);
 
         if (currentCategory == Category.CONTAINERS) {
-            graphics.centeredText(
-                    getFont(),
-                    Component.translatable("config.visiblearmorslots.containers.help").getString(),
-                    width / 2,
-                    height - 45,
-                    0x808080
-            );
+            String help = Component.translatable("config.visiblearmorslots.containers.help").getString();
+            graphics.text(getFont(), help, width / 2 - getFont().width(help) / 2, height - 45, 0x808080, true);
         }
     }
 
