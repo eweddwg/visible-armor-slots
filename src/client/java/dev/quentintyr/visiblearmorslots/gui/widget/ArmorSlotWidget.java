@@ -4,12 +4,8 @@ import dev.quentintyr.visiblearmorslots.gui.SlotInfo;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.equipment.Equippable;
 
 /**
  * Custom slot widget for armor pieces with validation
@@ -41,20 +37,6 @@ public class ArmorSlotWidget {
             context.fakeItem(stack, x, y);
             context.itemDecorations(Minecraft.getInstance().font, stack, x, y);
         }
-    }
-
-    public boolean canAcceptItem(ItemStack stack) {
-        if (stack.isEmpty())
-            return true;
-
-        Item item = stack.getItem();
-        Equippable equippable = stack.get(DataComponents.EQUIPPABLE);
-        if (equippable == null) {
-            return false;
-        }
-
-        EquipmentSlot itemSlot = equippable.slot();
-        return itemSlot == slotType.getEquipmentSlot();
     }
 
     public boolean isMouseOver(int mouseX, int mouseY) {

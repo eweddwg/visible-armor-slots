@@ -32,11 +32,6 @@ public class OffhandSlotWidget {
         }
     }
 
-    public boolean canAcceptItem(ItemStack stack) {
-        // Off-hand has no item type restrictions
-        return true;
-    }
-
     public boolean isMouseOver(int mouseX, int mouseY) {
         return mouseX >= x && mouseX < x + 16 && mouseY >= y && mouseY < y + 16;
     }

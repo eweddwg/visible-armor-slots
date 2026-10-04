@@ -11,8 +11,6 @@ import net.minecraft.resources.Identifier;
 import java.util.ArrayList;
 import java.util.List;
 
-import dev.quentintyr.visiblearmorslots.config.ModConfig;
-
 
 public class ContainerListWidget extends ContainerObjectSelectionList<ContainerListWidget.BaseEntry> {
 
