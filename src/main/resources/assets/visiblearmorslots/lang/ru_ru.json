@@ -10,13 +10,13 @@
   "config.visiblearmorslots.showOffhand": "Показывать слот второй руки",
   "config.visiblearmorslots.darkMode": "Тёмный режим",
   "config.visiblearmorslots.side": "Сторона",
-  "config.visiblearmorslots.marginX": "Горизонтальный отступ: %d px",
-  "config.visiblearmorslots.marginY": "Вертикальный отступ: %d px",
+  "config.visiblearmorslots.marginX": "Смещение по горизонтали: %d px",
+  "config.visiblearmorslots.marginY": "Смещение по вертикали: %d px",
   "config.visiblearmorslots.containers": "Настроить контейнеры...",
-  "config.visiblearmorslots.containers.help": "Нажмите, чтобы выбрать, у каких контейнеров показывать слоты брони",
+  "config.visiblearmorslots.containers.help": "Нажмите на контейнер, чтобы включить или выключить для него слоты брони",
   "config.visiblearmorslots.containers.enableAll": "Включить все",
   "config.visiblearmorslots.containers.disableAll": "Выключить все",
-  "config.visiblearmorslots.containers.reset": "Сбросить",
+  "config.visiblearmorslots.containers.reset": "По умолчанию",
   "config.visiblearmorslots.tab.settings": "Настройки",
   "config.visiblearmorslots.tab.containers": "Контейнеры"
 }
