@@ -5,7 +5,8 @@
   "refmap": "client-visiblearmorslots-refmap.json",
   "client": [
     "HandledScreenAccessor",
-    "HandledScreenMixin"
+    "HandledScreenMixin",
+    "RecipeBookScreenAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -23,48 +23,14 @@ public class HandledScreenMixin {
     @Unique
     private boolean vas$isRecipeBookOpen() {
         Object self = this;
-        // 26.3: AbstractRecipeBookScreen holds private recipeBookComponent with isVisible().
-        try {
-            java.lang.reflect.Field field = findRecipeBookField(self.getClass());
-            if (field != null) {
-                field.setAccessible(true);
-                Object widget = field.get(self);
-                if (widget != null) {
-                    java.lang.reflect.Method isVisible = widget.getClass().getMethod("isVisible");
-                    Object result = isVisible.invoke(widget);
-                    if (result instanceof Boolean b)
-                        return b;
-                }
-            }
-        } catch (Throwable ignored) {
-        }
-        // Legacy: mapped getter with isOpen().
-        // Mojang name is getRecipeBookComponent, Yarn-era name getRecipeBookWidget.
-        for (String getter : new String[] { "getRecipeBookComponent", "getRecipeBookWidget" }) {
+        // Typed accessor: AbstractRecipeBookScreen.recipeBookComponent (verified in 26.3 sources).
+        if (self instanceof RecipeBookScreenAccessor accessor) {
             try {
-                java.lang.reflect.Method getWidget = self.getClass().getMethod(getter);
-                Object widget = getWidget.invoke(self);
-                if (widget != null) {
-                    java.lang.reflect.Method isOpen = widget.getClass().getMethod("isOpen");
-                    Object result = isOpen.invoke(widget);
-                    if (result instanceof Boolean b)
-                        return b;
-                }
+                return accessor.visiblearmorslots$getRecipeBookComponent().isVisible();
             } catch (Throwable ignored) {
             }
         }
         return false;
-    }
-
-    @Unique
-    private static java.lang.reflect.Field findRecipeBookField(Class<?> cls) {
-        for (Class<?> c = cls; c != null && c != Object.class; c = c.getSuperclass()) {
-            try {
-                return c.getDeclaredField("recipeBookComponent");
-            } catch (NoSuchFieldException ignored) {
-            }
-        }
-        return null;
     }
 
     @Inject(method = "extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIF)V", at = @At("RETURN"))
