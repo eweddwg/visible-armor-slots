@@ -15,7 +15,9 @@ import java.util.List;
 public class ContainerListWidget extends ContainerObjectSelectionList<ContainerListWidget.BaseEntry> {
 
     // Base entry class to satisfy generic type bounds
-    public abstract static class BaseEntry extends ContainerObjectSelectionList.Entry<BaseEntry> {}
+    public abstract static class BaseEntry extends ContainerObjectSelectionList.Entry<BaseEntry> {
+        abstract Component narrationText();
+    }
 
     private final ModConfig config;
 
@@ -61,9 +63,24 @@ public class ContainerListWidget extends ContainerObjectSelectionList<ContainerL
         return Math.min(400, width - 50);
     }
 
+    @Override
+    public void updateWidgetNarration(net.minecraft.client.gui.narration.NarrationElementOutput output) {
+        BaseEntry target = getFocused();
+        if (target != null) {
+            output.add(net.minecraft.client.gui.narration.NarratedElementType.TITLE, target.narrationText());
+            narrateListElementPosition(output, target);
+        } else {
+            super.updateWidgetNarration(output);
+        }
+    }
+
     private class SectionTitleEntry extends BaseEntry {
         private final Component title;
         public SectionTitleEntry(Component title) { this.title = title; }
+
+        Component narrationText() {
+            return title;
+        }
 
         @Override
         public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
@@ -131,6 +148,11 @@ public class ContainerListWidget extends ContainerObjectSelectionList<ContainerL
         public void setEnabled(boolean value) {
             this.enabled = value;
             config.setContainerEnabled(id.toString(), value);
+        }
+
+        @Override
+        Component narrationText() {
+            return Component.literal(title + " (" + (enabled ? "enabled" : "disabled") + ")");
         }
 
         @Override
