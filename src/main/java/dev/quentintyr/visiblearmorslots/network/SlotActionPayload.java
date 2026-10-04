@@ -40,10 +40,20 @@ public record SlotActionPayload(ActionType actionType,
 
         @Override
         public SlotActionPayload decode(RegistryFriendlyByteBuf buf) {
-            ActionType actionType = ActionType.values()[buf.readVarInt()];
+            int actionOrdinal = buf.readVarInt();
+            ActionType[] actions = ActionType.values();
+            if (actionOrdinal < 0 || actionOrdinal >= actions.length) {
+                throw new IllegalArgumentException("Unknown action type ordinal: " + actionOrdinal);
+            }
+            ActionType actionType = actions[actionOrdinal];
             EquipmentSlot targetSlot = null;
             if (buf.readBoolean()) {
-                targetSlot = EquipmentSlot.values()[buf.readVarInt()];
+                int slotOrdinal = buf.readVarInt();
+                EquipmentSlot[] slots = EquipmentSlot.values();
+                if (slotOrdinal < 0 || slotOrdinal >= slots.length) {
+                    throw new IllegalArgumentException("Unknown equipment slot ordinal: " + slotOrdinal);
+                }
+                targetSlot = slots[slotOrdinal];
             }
             int hotbarSlot = buf.readVarInt();
             boolean isShiftPressed = buf.readBoolean();

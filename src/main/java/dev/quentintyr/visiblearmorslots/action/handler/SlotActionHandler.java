@@ -13,6 +13,9 @@ import net.minecraft.server.level.ServerPlayer;
 public class SlotActionHandler {
 
     public static void handleAction(SlotActionPayload action, ServerPlayer player) {
+        if (player == null || player.isRemoved() || player.isDeadOrDying() || player.isSpectator()) {
+            return;
+        }
         switch (action.actionType()) {
             case MOUSE_SWAP -> MouseSwapResolver.resolve(action, player);
             case QUICK_TRANSFER -> QuickTransferResolver.resolve(action, player);
