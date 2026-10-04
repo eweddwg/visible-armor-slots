@@ -81,7 +81,7 @@ public class HandledScreenMixin {
         }
 
         ArmorSlotsOverlay overlay = VisiblearmorslotsClient.getArmorSlotsOverlay();
-        if (overlay != null && overlay.mouseClicked(event.x, event.y, event.buttonInfo().button(), event.buttonInfo().modifiers())) {
+        if (overlay != null && overlay.mouseClicked(event.x(), event.y(), event.button(), event.modifiers())) {
             cir.setReturnValue(true);
             cir.cancel();
         }
@@ -100,8 +100,8 @@ public class HandledScreenMixin {
         ArmorSlotsOverlay overlay = VisiblearmorslotsClient.getArmorSlotsOverlay();
         if (overlay != null && overlay.isVisible()) {
             // Block mouse release events over overlay to prevent drops
-            if (event.x >= overlay.getBaseX() && event.x < overlay.getBaseX() + 24 &&
-                    event.y >= overlay.getBaseY() && event.y < overlay.getBaseY() + overlay.getColumnHeight()) {
+            if (event.x() >= overlay.getBaseX() && event.x() < overlay.getBaseX() + 24 &&
+                    event.y() >= overlay.getBaseY() && event.y() < overlay.getBaseY() + overlay.getColumnHeight()) {
                 cir.setReturnValue(true);
                 cir.cancel();
             }

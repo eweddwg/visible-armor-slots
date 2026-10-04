@@ -30,13 +30,13 @@ import java.util.List;
  * Enhanced armor slots overlay system
  */
 public class ArmorSlotsOverlay {
-    private static final Identifier COLUMN_TEXTURE_FULL = Identifier.fromNamespaceAndPath(
+    private static final Identifier COLUMN_TEXTURE_FULL = Identifier.parse(
             "visiblearmorslots:textures/gui/extra-slots.png");
-    private static final Identifier COLUMN_TEXTURE_COMPACT = Identifier.fromNamespaceAndPath(
+    private static final Identifier COLUMN_TEXTURE_COMPACT = Identifier.parse(
             "visiblearmorslots:textures/gui/extra-slots-no-second-hand.png");
-    private static final Identifier COLUMN_TEXTURE_FULL_DARK = Identifier.fromNamespaceAndPath(
+    private static final Identifier COLUMN_TEXTURE_FULL_DARK = Identifier.parse(
             "visiblearmorslots:textures/gui/dark-extra-slots.png");
-    private static final Identifier COLUMN_TEXTURE_COMPACT_DARK = Identifier.fromNamespaceAndPath(
+    private static final Identifier COLUMN_TEXTURE_COMPACT_DARK = Identifier.parse(
             "visiblearmorslots:textures/gui/dark-extra-slots-no-second-hand.png");
 
     private final List<ArmorSlotWidget> armorSlots = new ArrayList<>();

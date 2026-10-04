@@ -14,7 +14,7 @@ public class OffhandSlotWidget {
     private final int x;
     private final int y;
 
-        private static final Identifier EMPTY_OFFHAND_SLOT = Identifier.fromNamespaceAndPath(
+        private static final Identifier EMPTY_OFFHAND_SLOT = Identifier.parse(
             "minecraft:textures/item/empty_armor_slot_shield.png");
 
     public OffhandSlotWidget(int x, int y) {

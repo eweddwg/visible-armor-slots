@@ -19,13 +19,13 @@ public class ArmorSlotWidget {
     private final int x;
     private final int y;
 
-    private static final Identifier EMPTY_HELMET_SLOT = Identifier.fromNamespaceAndPath(
+    private static final Identifier EMPTY_HELMET_SLOT = Identifier.parse(
             "minecraft:textures/item/empty_armor_slot_helmet.png");
-    private static final Identifier EMPTY_CHEST_SLOT = Identifier.fromNamespaceAndPath(
+    private static final Identifier EMPTY_CHEST_SLOT = Identifier.parse(
             "minecraft:textures/item/empty_armor_slot_chestplate.png");
-    private static final Identifier EMPTY_LEGS_SLOT = Identifier.fromNamespaceAndPath(
+    private static final Identifier EMPTY_LEGS_SLOT = Identifier.parse(
             "minecraft:textures/item/empty_armor_slot_leggings.png");
-    private static final Identifier EMPTY_BOOTS_SLOT = Identifier.fromNamespaceAndPath(
+    private static final Identifier EMPTY_BOOTS_SLOT = Identifier.parse(
             "minecraft:textures/item/empty_armor_slot_boots.png");
 
     public ArmorSlotWidget(SlotInfo.SlotType slotType, int x, int y) {

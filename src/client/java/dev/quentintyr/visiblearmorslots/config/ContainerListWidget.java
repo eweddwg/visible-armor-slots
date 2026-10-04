@@ -3,7 +3,6 @@ package dev.quentintyr.visiblearmorslots.config;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
-import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -18,7 +17,7 @@ import dev.quentintyr.visiblearmorslots.config.ModConfig;
 public class ContainerListWidget extends ContainerObjectSelectionList<ContainerListWidget.BaseEntry> {
 
     // Base entry class to satisfy generic type bounds
-    public abstract static class BaseEntry extends ObjectSelectionList.Entry<BaseEntry> {}
+    public abstract static class BaseEntry extends ContainerObjectSelectionList.Entry<BaseEntry> {}
 
     private final ModConfig config;
 
@@ -140,8 +139,8 @@ public class ContainerListWidget extends ContainerObjectSelectionList<ContainerL
 
         @Override
         public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-            if (event.x >= lastToggleX && event.x < lastToggleX + lastToggleWidth &&
-                event.y >= lastToggleY && event.y < lastToggleY + lastToggleHeight) {
+            if (event.x() >= lastToggleX && event.x() < lastToggleX + lastToggleWidth &&
+                event.y() >= lastToggleY && event.y() < lastToggleY + lastToggleHeight) {
                 toggle();
                 return true;
             }
