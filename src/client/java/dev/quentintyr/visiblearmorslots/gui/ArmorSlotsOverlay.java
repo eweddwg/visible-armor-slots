@@ -93,6 +93,14 @@ public class ArmorSlotsOverlay {
             dev.quentintyr.visiblearmorslots.Visiblearmorslots.LOGGER.warn("Failed to resolve container type, allowing overlay: {}", e.getMessage());
         }
 
+        // Server must have the mod too: without our channel the actions
+        // would go nowhere, so stay hidden instead of faking it.
+        if (!ClientPlayNetworking.canSend(SlotActionPayload.ID)) {
+            dev.quentintyr.visiblearmorslots.Visiblearmorslots.LOGGER.debug("Server lacks the mod channel, overlay disabled");
+            visible = false;
+            return;
+        }
+
         visible = true;
         columnHeight = ModConfig.getInstance().isShowOffhandSlot() ? 100 : 78;
         currentScreen = screen;
@@ -321,6 +329,12 @@ public class ArmorSlotsOverlay {
                 isShiftPressed, isCtrlPressed, isCreative, button);
 
         try {
+            if (!ClientPlayNetworking.canSend(payload.type())) {
+                dev.quentintyr.visiblearmorslots.Visiblearmorslots.LOGGER.debug(
+                    "Skipping slot action {}: server lacks the mod channel", actionType
+                );
+                return;
+            }
             ClientPlayNetworking.send(payload);
         } catch (Exception e) {
             dev.quentintyr.visiblearmorslots.Visiblearmorslots.LOGGER.error(
